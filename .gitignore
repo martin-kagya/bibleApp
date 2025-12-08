@@ -1,2 +1,16 @@
+# Dependencies
 node_modules
-vectors.json
+
+# Large Data & Models
+data/vectors.json
+models/
+temp/
+
+# Build & Dist
+dist/
+build/
+*.app
+
+# Environment & Secrets
+.env
+.DS_Store
