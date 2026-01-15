@@ -1,122 +1,122 @@
-const fs = require('fs')
-const path = require('path')
-let appPath = process.cwd()
+const { fork } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+let appPath = process.cwd();
 try {
-  const { app } = require('electron')
-  if (app) appPath = app.getAppPath()
+  const { app } = require('electron');
+  if (app) appPath = app.getAppPath();
 } catch (e) { }
 
 class WhisperService {
   constructor() {
-    this.model = 'Xenova/whisper-tiny.en' // Tiny model for speed on CPU
-    this.transcriber = null
-    this.isReady = false
-    this.pipeline = null
-    this.env = null
-    this.init()
+    this.worker = null;
+    this.isReady = false;
+    this.pendingRequests = new Map();
+    this.restartDelay = 1000;
+    this.init();
   }
 
   async init() {
-    try {
-      // Dynamic import for ESM module
-      const { pipeline, env } = await import('@xenova/transformers')
-      this.pipeline = pipeline
-      this.env = env
+    if (this.worker) return; // Already initialized or initializing
 
-      // Configure transformers.js to use local models if downloaded, or cache them
-      this.env.localModelPath = path.join(appPath, 'models')
-      this.env.cacheDir = path.join(appPath, 'models') // Force download to this folder
-      this.env.allowRemoteModels = true // Allow downloading on first run
+    console.log('🎤 Spawning Whisper Child Process...');
+    this.worker = fork(path.join(__dirname, 'whisperWorker.js'), [appPath], {
+      stdio: ['inherit', 'inherit', 'inherit', 'ipc']
+    });
 
-      console.log('🎤 Loading local Whisper model...')
-      this.transcriber = await this.pipeline('automatic-speech-recognition', this.model)
-      this.isReady = true
-      console.log('✓ Whisper model loaded')
-    } catch (error) {
-      console.error('❌ Failed to load Whisper model:', error)
-    }
-  }
-
-  /**
-   * Transcribe audio file/buffer
-   * @param {string|Float32Array} audio - Path to file or float32 audio data
-   * @returns {Promise<Object>} Transcription result
-   */
-  async transcribe(audio, options = {}) {
-    if (!this.isReady) {
-      // Try to re-init if not ready, or wait
-      await this.init()
-      if (!this.isReady) throw new Error('Whisper model not ready')
-    }
-
-    try {
-      // transformers.js accepts file paths or raw float32 arrays
-      // It handles resampling automatically for file paths.
-      // For raw buffers, we might need 'wavefile' to decode if it's a buffer.
-
-      const result = await this.transcriber(audio, {
-        chunk_length_s: 30,
-        stride_length_s: 5,
-        language: 'english',
-        task: 'transcribe',
-        return_timestamps: true
-      })
-
-      return {
-        text: result.text.trim(),
-        language: 'en',
-        segments: result.chunks || []
+    this.worker.on('message', (msg) => {
+      if (msg.type === 'ready') {
+        this.isReady = true;
+        console.log('✓ Whisper Child Process Ready');
+      } else if (msg.type === 'log') {
+        console.log(`[WhisperChild] ${msg.message}`);
+      } else if (msg.type === 'error') {
+        if (msg.requestId) {
+          const resolver = this.pendingRequests.get(msg.requestId);
+          if (resolver) resolver.reject(new Error(msg.error));
+          this.pendingRequests.delete(msg.requestId);
+        } else {
+          console.error(`[WhisperChild Error] ${msg.message}`);
+        }
+      } else if (msg.type === 'result') {
+        const resolver = this.pendingRequests.get(msg.requestId);
+        if (resolver) {
+          resolver.resolve(msg.data);
+          this.pendingRequests.delete(msg.requestId);
+        }
       }
-    } catch (error) {
-      console.error('Transcription error:', error)
-      throw error
-    }
+    });
+
+    this.worker.on('error', (err) => {
+      console.error('❌ Whisper Child Process Crash:', err);
+    });
+
+    this.worker.on('exit', (code) => {
+      console.error(`Whisper Child Process stopped with exit code ${code}. Restarting in ${this.restartDelay}ms...`);
+      this.isReady = false;
+      this.worker = null;
+      setTimeout(() => this.init(), this.restartDelay);
+    });
   }
 
-  /**
-   * Correct common transcription errors specific to Bible references
-   */
-  correctBibleReferences(text) {
-    if (!text) return ''
+  async ensureReady() {
+    if (this.isReady) return;
+    if (!this.worker) await this.init();
 
-    const corrections = {
-      'john three sixteen': 'John 3:16',
-      'first corinthians': '1 Corinthians',
-      'second corinthians': '2 Corinthians',
-      'first john': '1 John',
-      'second john': '2 John',
-      'third john': '3 John',
-      'first peter': '1 Peter',
-      'second peter': '2 Peter',
-      'first timothy': '1 Timothy',
-      'second timothy': '2 Timothy',
-      'first thessalonians': '1 Thessalonians',
-      'second thessalonians': '2 Thessalonians',
-      'first samuel': '1 Samuel',
-      'second samuel': '2 Samuel',
-      'first kings': '1 Kings',
-      'second kings': '2 Kings',
-      'first chronicles': '1 Chronicles',
-      'second chronicles': '2 Chronicles',
-      'romans ate twenty-eight': 'Romans 8:28',
-      'philippians four thirteen': 'Philippians 4:13',
+    let attempts = 0;
+    while (!this.isReady && attempts < 150) {
+      await new Promise(r => setTimeout(r, 100));
+      attempts++;
+    }
+    if (!this.isReady) throw new Error('Whisper service failed to initialize after restart');
+  }
+
+  async transcribe(audio, options = {}) {
+    await this.ensureReady();
+
+    let audioInput = audio;
+
+    // Handle Buffer input (convert to Float32Array)
+    if (Buffer.isBuffer(audio)) {
+      const int16 = new Int16Array(audio.buffer, audio.byteOffset, audio.length / 2);
+      audioInput = new Float32Array(int16.length);
+      for (let i = 0; i < int16.length; i++) {
+        audioInput[i] = int16[i] / 32768.0;
+      }
+    } else if (typeof audio === 'string') {
+      console.warn('File path transcription not fully supported in Worker mode yet. Please pass Buffer/Float32Array.');
+      return { text: '' };
     }
 
-    let correctedText = text
-    for (const [pattern, replacement] of Object.entries(corrections)) {
-      const regex = new RegExp(pattern, 'gi')
-      correctedText = correctedText.replace(regex, replacement)
-    }
-    return correctedText
+    return new Promise((resolve, reject) => {
+      const requestId = Math.random().toString(36).substring(7);
+      this.pendingRequests.set(requestId, { resolve, reject });
+
+      // Post Float32Array to worker
+      // Logic checks
+      if (!(audioInput instanceof Float32Array)) {
+        reject(new Error('Invalid audio input format. Expected Buffer or Float32Array.'));
+        return;
+      }
+
+      try {
+        if (!this.worker) throw new Error('Worker died unexpectedly');
+        this.worker.send({
+          type: 'transcribe',
+          requestId,
+          audio: Array.from(audioInput)
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   isServiceAvailable() {
-    return this.isReady
+    return this.isReady;
   }
 }
 
-const whisperService = new WhisperService()
-module.exports = { whisperService }
-
-
-
+const whisperService = new WhisperService();
+module.exports = { whisperService };

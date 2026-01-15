@@ -40,7 +40,7 @@ const ScriptureCard = ({ scripture, onDisplay }) => {
 
   return (
     <div className={`card border-l-4 ${borderColor} hover:shadow-lg transition-all duration-200 cursor-pointer`}
-         onClick={() => onDisplay && onDisplay(scripture)}>
+      onClick={() => onDisplay && onDisplay(scripture)}>
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
           <MatchIcon className={`h-4 w-4 ${matchType.color}`} />
@@ -54,12 +54,23 @@ const ScriptureCard = ({ scripture, onDisplay }) => {
       </div>
 
       {/* Match Type Badge */}
-      <div className="mb-2">
+      <div className="mb-2 flex gap-2">
         <span className={`text-xs px-2 py-0.5 rounded ${matchType.color} bg-opacity-10`}>
           {matchType.label}
         </span>
+        {scripture.isSmart && (
+          <span className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1">
+            <span className="text-xs">✨</span> Smart Match
+          </span>
+        )}
       </div>
-      
+
+      {scripture.reasoning && (
+        <div className="mb-3 p-2 bg-gradient-to-r from-purple-50 to-white border-l-2 border-purple-300 rounded-r text-xs text-purple-800">
+          <strong>AI Insight:</strong> {scripture.reasoning}
+        </div>
+      )}
+
       {scripture.text && (
         <p className="text-gray-700 text-sm mb-3 leading-relaxed">
           {scripture.text}
@@ -103,7 +114,7 @@ const ScriptureCard = ({ scripture, onDisplay }) => {
           ))}
         </div>
       )}
-      
+
       {scripture.context && (
         <p className="text-gray-600 text-xs italic border-t border-gray-200 pt-2">
           {scripture.context}

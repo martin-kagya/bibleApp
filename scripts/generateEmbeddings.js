@@ -1,7 +1,8 @@
 /**
- * Generate Embeddings for Local Bible Database
+ * Generate Embeddings for Multi-Model Bible System
  * 
- * Usage: node scripts/generateEmbeddings.js
+ * Usage: node scripts/generateEmbeddings.js [model_name]
+ * If no model name provided, generates for ALL configured models.
  */
 
 const { vectorDbService } = require('../services/vectorDbService')
@@ -14,79 +15,172 @@ const BATCH_SIZE = 50
 async function generate() {
   console.log('╔════════════════════════════════════════════════════════════╗')
   console.log('║                                                            ║')
-  console.log('║   📚 Local Bible Embedding Generator                      ║')
+  console.log('║   Bible Embedding Generator (Multi-Model)                  ║')
   console.log('║                                                            ║')
   console.log('╚════════════════════════════════════════════════════════════╝\n')
 
   try {
-    // 1. Initialize Vector Service (triggers model load)
-    console.log('⏳ Initializing vector service...')
-    // We need to wait for init. But init is called in constructor loosely. 
-    // Let's force a call or wait.
-    // Ideally vectorDbService should have an exposed init or we just wait a bit/check ready
-
-    // We can rely on generateEmbedding to auto-init, but let's be explicit
     await vectorDbService.init()
 
-    // 2. Fetch all verses
-    console.log('📖 Fetching verses from local database...')
-    const verses = localBibleService.getAllVerses()
-    console.log(`✓ Found ${verses.length} verses to process`)
+    // Determine which models to generate
+    const args = process.argv.slice(2)
+    const specificModel = args[0]
 
-    if (verses.length === 0) {
-      console.error('❌ No verses found. Run npm run db:seed first.')
-      process.exit(1)
+    let modelsToProcess = vectorDbService.getAvailableModels()
+    if (specificModel) {
+      if (modelsToProcess.includes(specificModel)) {
+        modelsToProcess = [specificModel]
+      } else {
+        console.error(`❌ Unknown model: ${specificModel}`)
+        console.log(`Available: ${modelsToProcess.join(', ')}`)
+        process.exit(1)
+      }
     }
 
-    // 3. Process in batches
-    console.log(`🚀 Starting generation (Batch size: ${BATCH_SIZE})...`)
-    const startTime = Date.now()
-    let processed = 0
+    console.log(`🎯 Targets: ${modelsToProcess.join(', ')}`)
 
-    // Check if we have existing vectors to skip?
-    // For now, full regenerate
+    // We prioritize KJV (1) for the "display text" in metadata as it's the master translation
+    // Then we include NIV (3), ESV (7), NLT (4), and AMP (2) for semantic richness
+    const transIds = [1, 3, 7, 4, 2];
+    const versionData = {}; // ref -> { texts: [], metadata: {} }
 
-    // We need to access vectorDbService.vectors directly or use storeVerse
-    // ensure vectorDbService.vectors is reset if we want clean state, or we append
-    vectorDbService.vectors = []
-
-    for (let i = 0; i < verses.length; i += BATCH_SIZE) {
-      const batch = verses.slice(i, i + BATCH_SIZE)
-
-      await Promise.all(batch.map(async (verse) => {
-        try {
-          await vectorDbService.storeVerse(verse)
-        } catch (err) {
-          console.error(`Error processing ${verse.reference}:`, err.message)
+    for (const tid of transIds) {
+      console.log(`\n  📥 Fetching translation ID ${tid}...`);
+      const transVerses = localBibleService.getAllVerses(tid);
+      for (const v of transVerses) {
+        if (!versionData[v.reference]) {
+          versionData[v.reference] = {
+            texts: [],
+            metadata: {
+              type: 'verse',
+              book: v.book,
+              book_id: v.book_id,
+              chapter: v.chapter,
+              verse: v.verse,
+              reference: v.reference,
+              text: v.text // KJV will be first
+            }
+          };
         }
-      }))
+        versionData[v.reference].texts.push(`[${v.translation}] ${v.text}`);
+      }
+    }
 
-      processed += batch.length
+    const commentaries = localBibleService.getAllCommentaries()
+    const qaPairs = localBibleService.getAllQA()
 
-      // Progress
-      if (processed % 100 === 0) {
-        const elapsed = (Date.now() - startTime) / 1000
-        const rate = processed / elapsed
-        const remaining = verses.length - processed
-        const eta = remaining / rate
+    console.log(`✓ Compiled ${Object.keys(versionData).length} unique verse references`)
+    console.log(`✓ Found ${commentaries.length} commentaries`)
+    console.log(`✓ Found ${qaPairs.length} QA pairs`)
 
-        process.stdout.write(`\rProgress: ${processed}/${verses.length} (${(processed / verses.length * 100).toFixed(1)}%) | Rate: ${rate.toFixed(1)} v/s | ETA: ${eta.toFixed(0)}s   `)
+    // Prepare ALL items to embed
+    let allItems = []
+
+    // 1. Verses (Consolidated)
+    Object.values(versionData).forEach(v => {
+      // We concatenate multiple versions of the same verse into one semantic string.
+      // This makes the vector robust to ANY of those versions being quoted.
+      const consolidatedText = v.texts.join(' ').trim();
+      allItems.push({
+        id: v.metadata.reference,
+        textToEmbed: consolidatedText,
+        metadata: v.metadata
+      });
+    });
+
+    // 2. Commentaries
+    allItems = allItems.concat(commentaries.map((c, idx) => ({
+      id: `comm-${c.book}-${c.chapter}-${c.verse}-${idx}`,
+      textToEmbed: `${c.source} on ${c.reference}: ${c.text}`,
+      metadata: {
+        type: 'commentary',
+        book: c.book,
+        chapter: c.chapter,
+        verse: c.verse,
+        text: c.text,
+        reference: c.reference,
+        source: c.source
+      }
+    })))
+
+    // 3. QA
+    allItems = allItems.concat(qaPairs.map((qa, idx) => ({
+      id: `qa-${idx}`,
+      textToEmbed: `Question: ${qa.question} Answer: ${qa.answer}`,
+      metadata: {
+        type: 'qa',
+        question: qa.question,
+        answer: qa.answer,
+        reference: qa.references,
+        text: `${qa.question}\n${qa.answer}`
+      }
+    })))
+
+    console.log(`\nTotal items to embed: ${allItems.length}`)
+    const textsToEmbed = allItems.map(i => i.textToEmbed)
+
+    // Loop through models
+    for (const modelId of modelsToProcess) {
+      console.log(`\n------------------------------------------------------------`)
+      console.log(`🧠 Processing Model: ${modelId.toUpperCase()}`)
+      console.log(`------------------------------------------------------------`)
+
+      const filename = `vectors-${modelId}.json`
+      const savePath = path.join(process.cwd(), 'data', filename)
+
+      // Use WriteStream to avoid "Structure too large" / "Invalid string length" errors
+      const stream = fs.createWriteStream(savePath, { flags: 'w' })
+
+      const startTime = Date.now()
+      let processed = 0
+      // const vectors = [] // No longer keeping in memory
+
+      for (let i = 0; i < allItems.length; i += BATCH_SIZE) {
+        const batchTexts = textsToEmbed.slice(i, i + BATCH_SIZE)
+        const batchItems = allItems.slice(i, i + BATCH_SIZE)
+
+        try {
+          const embeddings = await vectorDbService.generateBatch(batchTexts, modelId)
+
+          const batchResults = batchItems.map((item, idx) => ({
+            id: item.id,
+            vector: embeddings[idx],
+            metadata: item.metadata
+          }))
+
+          // Write each item as a JSON line
+          for (const item of batchResults) {
+            stream.write(JSON.stringify(item) + '\n')
+          }
+
+          processed += batchItems.length
+
+          // Progress
+          const elapsed = (Date.now() - startTime) / 1000
+          const rate = processed / elapsed
+          const remaining = allItems.length - processed
+          const eta = remaining / (rate || 1)
+          process.stdout.write(`\r[${modelId}] ${processed}/${allItems.length} (${(processed / allItems.length * 100).toFixed(0)}%) | ${rate.toFixed(0)} items/s | ETA: ${eta.toFixed(0)}s  `)
+
+        } catch (err) {
+          console.error(`\n❌ Error batch ${i}:`, err.message)
+          if (err.message.includes('429')) {
+            console.log('Sleeping 60s...')
+            await new Promise(r => setTimeout(r, 60000))
+            i -= BATCH_SIZE; processed -= batchVerses.length;
+          }
+        }
       }
 
-      // Periodic save (optional, but good for safety)
-      // For simplicity, save at end
+      stream.end()
+      console.log(`\n💾 Saved stream to data/${filename}`)
+      console.log(`✓ Completed ${modelId} in ${((Date.now() - startTime) / 1000).toFixed(1)}s`)
     }
 
-    console.log('\n\n💾 Saving vectors to disk...')
-    const savePath = path.join(process.cwd(), 'data', 'vectors.json')
-    await fs.writeJson(savePath, vectorDbService.vectors)
-
-    console.log(`✓ Saved ${vectorDbService.vectors.length} vectors to ${savePath}`)
-    console.log(`✓ Total time: ${((Date.now() - startTime) / 1000).toFixed(1)}s`)
+    console.log('\n✨ All operations complete!')
 
   } catch (error) {
-    console.error('\n❌ Fatal error:', error)
-    process.exit(1)
+    console.error('\n❌ Fatal Error:', error)
   }
 }
 

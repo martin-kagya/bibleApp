@@ -11,5 +11,18 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  optimizeDeps: {
+    exclude: [
+      '@ricky0123/vad-react',
+      '@ricky0123/vad-web',
+      'onnxruntime-web'
+    ]
+  },
+  build: {
+    rollupOptions: {
+      external: ['onnxruntime-node']
+    }
   }
 })
+

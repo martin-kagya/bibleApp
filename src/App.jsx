@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Header from './components/Header'
-import SpeechRecognition from './components/SpeechRecognition'
 import PresentationDisplay from './components/PresentationDisplay'
-import ScriptureDatabase from './components/ScriptureDatabase'
+import LiveDisplay from './components/LiveDisplay'
 import { SpeechProvider } from './contexts/SpeechContext'
 import { ScriptureProvider, useScripture } from './contexts/ScriptureContext'
+import DebugPanel from './components/DebugPanel'
 
-// Component to connect Speech and Scripture contexts
+const MainLayout = () => (
+  <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
+    <Header />
+    <main className="container mx-auto px-4 py-8">
+      <Routes>
+        <Route path="/" element={<PresentationDisplay />} />
+        <Route path="/speech" element={<SpeechRecognition />} />
+        <Route path="/database" element={<ScriptureDatabase />} />
+      </Routes>
+    </main>
+  </div>
+);
+
 const AppContent = () => {
   const { sendTranscript, sessionId } = useScripture()
 
-  // Create a wrapped function that respects session state
   const handleTranscriptChange = (transcript) => {
     if (sessionId && transcript) {
       sendTranscript(transcript)
@@ -21,16 +31,19 @@ const AppContent = () => {
   return (
     <SpeechProvider onTranscriptChange={handleTranscriptChange}>
       <Router>
-        <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
-          <Header />
-          <main className="container mx-auto px-4 py-8">
-            <Routes>
-              <Route path="/" element={<PresentationDisplay />} />
-              <Route path="/speech" element={<SpeechRecognition />} />
-              <Route path="/database" element={<ScriptureDatabase />} />
-            </Routes>
-          </main>
-        </div>
+        <DebugPanel />
+        <Routes>
+          <Route path="/live" element={<LiveDisplay />} />
+          {/* Main Route - Wraps Dashboard via PresentationDisplay */}
+          <Route path="/*" element={
+            <div className="min-h-screen bg-background">
+              {/* No Header - Dashboard has its own */}
+              <Routes>
+                <Route path="/" element={<PresentationDisplay />} />
+              </Routes>
+            </div>
+          } />
+        </Routes>
       </Router>
     </SpeechProvider>
   )

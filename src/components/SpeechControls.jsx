@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSpeech } from '../contexts/SpeechContext'
 import { Mic, MicOff, RotateCcw } from 'lucide-react'
+import SourcePicker from './SourcePicker'
 
 const SpeechControls = () => {
+  const [showPicker, setShowPicker] = useState(false)
   const {
     isListening,
     isSupported,
@@ -10,7 +12,8 @@ const SpeechControls = () => {
     startListening,
     stopListening,
     clearTranscript,
-    initializeSpeechRecognition
+    initializeSpeechRecognition,
+    sourceType
   } = useSpeech()
 
   useEffect(() => {
@@ -42,13 +45,31 @@ const SpeechControls = () => {
 
   return (
     <div className="flex items-center space-x-4">
+      <div className="flex bg-gray-100 rounded-lg p-1 mr-2">
+        <button
+          onClick={() => !isListening && startListening('mic')}
+          disabled={isListening}
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!isListening && sourceType === 'mic' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          Microphone
+        </button>
+        <button
+          onClick={() => !isListening && startListening('system')}
+          disabled={isListening}
+          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!isListening && sourceType === 'system' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+        >
+          System Audio
+        </button>
+      </div>
+
       <button
-        onClick={isListening ? stopListening : startListening}
-        className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-          isListening
-            ? 'bg-red-600 hover:bg-red-700 text-white'
-            : 'bg-primary-600 hover:bg-primary-700 text-white'
-        }`}
+        onClick={() => isListening ? stopListening() : startListening(sourceType)}
+        className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isListening
+          ? 'bg-red-600 hover:bg-red-700 text-white'
+          : 'bg-primary-600 hover:bg-primary-700 text-white'
+          }`}
       >
         {isListening ? (
           <>
@@ -58,7 +79,7 @@ const SpeechControls = () => {
         ) : (
           <>
             <Mic className="h-5 w-5" />
-            <span>Start Listening</span>
+            <span>Start {sourceType === 'system' ? 'System' : 'Mic'}</span>
           </>
         )}
       </button>

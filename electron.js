@@ -23,7 +23,9 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'electron-preload.js')
+      preload: path.join(__dirname, 'electron-preload.js'),
+      webSecurity: false, // Allow Web Speech API to connect to Google
+      allowRunningInsecureContent: false
     },
     backgroundColor: '#f9fafb',
     title: 'Bible Presentation App',
@@ -41,6 +43,16 @@ function createWindow() {
     : `http://localhost:${SERVER_PORT}` // Production server
 
   mainWindow.loadURL(startURL)
+
+  // Grant media permissions for microphone
+  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+    const allowedPermissions = ['media', 'microphone', 'audioCapture']
+    if (allowedPermissions.includes(permission)) {
+      callback(true) // Allow
+    } else {
+      callback(false) // Deny
+    }
+  })
 
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
@@ -108,12 +120,217 @@ app.on('before-quit', () => {
   stopServer()
 })
 
+// Handle Projector Window
+ipcMain.handle('get-desktop-sources', async () => {
+  const { desktopCapturer } = require('electron')
+  const sources = await desktopCapturer.getSources({ types: ['window', 'screen'] })
+  return sources.map(source => ({
+    id: source.id,
+    name: source.name,
+    thumbnail: source.thumbnail.toDataURL()
+  }))
+})
+
+// Handle Projector Window
+ipcMain.on('open-projector', () => {
+  const { screen } = require('electron')
+  const displays = screen.getAllDisplays()
+  const primaryDisplay = screen.getPrimaryDisplay()
+
+  // Find external display (first one that isn't primary)
+  // If no external display, fall back to creating a new window on primary (offset)
+  const externalDisplay = displays.find((display) => {
+    return display.bounds.x !== 0 || display.bounds.y !== 0
+  }) || primaryDisplay
+
+  const projectorWindow = new BrowserWindow({
+    x: externalDisplay.bounds.x + 50,
+    y: externalDisplay.bounds.y + 50,
+    width: 1280,
+    height: 720,
+    minWidth: 800,
+    minHeight: 600,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'electron-preload.js')
+    },
+    backgroundColor: '#000000',
+    title: 'Live Projector',
+    autoHideMenuBar: true,
+    show: false
+  })
+
+  const startURL = IS_DEV
+    ? `http://localhost:${DEV_SERVER_PORT}/live`
+    : `http://localhost:${SERVER_PORT}/live`
+
+  projectorWindow.loadURL(startURL)
+
+  projectorWindow.once('ready-to-show', () => {
+    // If we found a distinct external display, go fullscreen there
+    if (externalDisplay !== primaryDisplay) {
+      projectorWindow.setFullScreen(true)
+    }
+    projectorWindow.show()
+  })
+
+  // Open external links in browser
+  projectorWindow.webContents.setWindowOpenHandler(({ url }) => {
+    require('electron').shell.openExternal(url)
+    return { action: 'deny' }
+  })
+})
+
 // IPC handlers
-ipcMain.handle('app-info', () => {
+ipcMain.handle('get-app-info', () => {
   return {
     version: app.getVersion(),
     name: app.getName(),
     isPackaged: app.isPackaged
+  }
+})
+
+// Helper function to clean EasyWorship RTF/Text
+const cleanSongText = (text) => {
+  if (!text) return '';
+
+  // Remove common RTF tags if present
+  let clean = text.replace(/\{\\rtf1[^{}]*\{[^{}]*\}|\\page|\\line|\\par|\\tab|\\\w+|[{\}]/g, '');
+
+  // Remove EasyWorship specific tags like [Verse 1], [Chorus], etc. or keep them if preferred
+  // For now let's just clean up whitespace
+  clean = clean.split('\n').map(line => line.trim()).filter(line => line).join('\n');
+
+  return clean;
+}
+
+ipcMain.handle('import-xml-songs', async () => {
+  const fs = require('fs');
+  const path = require('path');
+  const { XMLParser } = require('fast-xml-parser');
+
+  const songsDir = path.join(__dirname, 'data', 'Songs');
+  if (!fs.existsSync(songsDir)) {
+    return { success: false, message: 'Songs directory not found' };
+  }
+
+  try {
+    const files = fs.readdirSync(songsDir).filter(f => f.endsWith('.xml'));
+    const songs = [];
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_"
+    });
+
+    for (const file of files) {
+      const filePath = path.join(songsDir, file);
+      // Read as buffer first to handle encoding
+      const buffer = fs.readFileSync(filePath);
+
+      // XML files from this app seem to be UTF-16LE
+      let content = buffer.toString('utf16le');
+      if (!content.includes('<?xml')) {
+        // Fallback to utf8 if not utf16
+        content = buffer.toString('utf8');
+      }
+
+      const jsonObj = parser.parse(content);
+      const songData = jsonObj.song;
+
+      if (songData) {
+        let title = '';
+        if (songData.properties && songData.properties.titles) {
+          title = songData.properties.titles.title;
+          if (Array.isArray(title)) title = title[0];
+          // Titles often have "@_lang" attribute if ignoreAttributes is false
+          if (typeof title === 'object') title = title['#text'] || title['title'];
+        }
+
+        // Fallback to filename if title is missing
+        if (!title) title = path.basename(file, '.xml').trim();
+
+        let lyrics = '';
+        if (songData.lyrics && songData.lyrics.verse) {
+          const verses = Array.isArray(songData.lyrics.verse)
+            ? songData.lyrics.verse
+            : [songData.lyrics.verse];
+
+          lyrics = verses.map(v => {
+            let lines = v.lines;
+            if (typeof lines === 'object' && lines['#text']) lines = lines['#text'];
+            if (typeof lines === 'string') {
+              return lines.replace(/<br\s*\/?>/gi, '\n');
+            }
+            return '';
+          }).filter(l => l).join('\n\n');
+        }
+
+        if (title && lyrics) {
+          songs.push({ title: title.trim(), lyrics: lyrics.trim() });
+        }
+      }
+    }
+
+    return { success: true, songs, count: songs.length };
+  } catch (error) {
+    console.error('XML Import error:', error);
+    return { success: false, message: error.message };
+  }
+});
+
+ipcMain.handle('import-easyworship-songs', async () => {
+  const { dialog } = require('electron');
+  const Database = require('better-sqlite3');
+
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select EasyWorship Songs Database',
+    filters: [{ name: 'SQLite Database', extensions: ['db', 'sqlite', 'sqlite3'] }],
+    properties: ['openFile']
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return { success: false, message: 'No file selected' };
+  }
+
+  const dbPath = result.filePaths[0];
+  let db;
+  try {
+    db = new Database(dbPath, { readonly: true });
+
+    // Check if it's a song database
+    // EasyWorship 6/7 usually has a 'song' table
+    const tableCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='song'").get();
+
+    if (!tableCheck) {
+      return { success: false, message: 'Invalid database: No "song" table found' };
+    }
+
+    // EasyWorship schema varies but title and words/lyrics are core
+    // We'll try to find common column names
+    const columns = db.prepare("PRAGMA table_info(song)").all();
+    const colNames = columns.map(c => c.name.toLowerCase());
+
+    const titleCol = colNames.includes('title') ? 'title' : null;
+    const bodyCol = colNames.includes('words') ? 'words' : (colNames.includes('lyrics') ? 'lyrics' : null);
+
+    if (!titleCol || !bodyCol) {
+      return { success: false, message: 'Could not identify title or lyrics columns in database' };
+    }
+
+    const rows = db.prepare(`SELECT ${titleCol} as title, ${bodyCol} as body FROM song`).all();
+
+    const songs = rows.map(row => ({
+      title: row.title,
+      lyrics: cleanSongText(row.body)
+    })).filter(s => s.title && s.lyrics);
+
+    return { success: true, songs, count: songs.length };
+  } catch (error) {
+    console.error('Import error:', error);
+    return { success: false, message: error.message };
+  } finally {
+    if (db) db.close();
   }
 })
 

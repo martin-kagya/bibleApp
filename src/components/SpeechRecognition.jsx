@@ -6,6 +6,8 @@ import { Mic, AlertCircle } from 'lucide-react'
 const SpeechRecognition = () => {
   const { transcript, isListening, error, isSupported } = useSpeech()
 
+  console.log('🖥️ [SpeechRecognition Render] isListening:', isListening, 'Transcript:', transcript)
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center">
@@ -58,14 +60,14 @@ const SpeechRecognition = () => {
             </span>
           )}
         </div>
-        
+
         <div className="bg-gray-50 p-4 rounded-lg min-h-[200px] max-h-[400px] overflow-y-auto">
           {transcript ? (
             <p className="text-gray-800 leading-relaxed">{transcript}</p>
           ) : (
             <p className="text-gray-500 italic">
-              {isListening 
-                ? 'Start speaking to see the transcript here...' 
+              {isListening
+                ? 'Start speaking to see the transcript here...'
                 : 'Click "Start Listening" to begin speech recognition'
               }
             </p>

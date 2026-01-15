@@ -23,37 +23,47 @@ class EnhancedAiService {
       sessionId = null,
       includeThemes = true,
       includeSuggestions = true,
-      minConfidence = 0.5
+      minConfidence = 0.4  // Lower for live audio (context helps)
     } = options
 
     console.log('🔍 Starting comprehensive scripture detection...')
 
     try {
-      // 1. Extract explicit references
+      // 1. Extract explicit references (fast, synchronous)
       const explicitRefs = this.extractExplicitReferences(transcript)
 
-      // 2. Extract themes
-      let themes = null
-      if (includeThemes) {
-        themes = await themeExtractionService.extractThemes(transcript, { sessionId })
+      // 2. If explicit refs found, skip expensive semantic search
+      if (explicitRefs.length > 0) {
+        console.log(`✓ Found ${explicitRefs.length} explicit refs, skipping semantic search`)
+        const enriched = await this.enrichReferences(explicitRefs)
+        return {
+          detected: enriched,
+          suggested: [],
+          themes: {},
+          sessionId,
+          timestamp: Date.now()
+        }
       }
 
-      // 3. Semantic search (paraphrase)
-      // Note: This calls vectorDbService underneath
-      const semanticMatches = await semanticSearchService.findParaphrasedScripture(
-        transcript,
-        { sessionId, minConfidence }
-      )
-
-      // 4. Enrich references with text from Local DB
-      const allDetected = await this.enrichReferences([
-        ...explicitRefs,
-        ...semanticMatches
+      // 3. No explicit refs - do semantic search with context
+      console.log('No explicit refs found, performing semantic search...')
+      const [themes, semanticMatches] = await Promise.all([
+        includeThemes
+          ? themeExtractionService.extractThemes(transcript, { sessionId })
+          : Promise.resolve(null),
+        semanticSearchService.findParaphrasedScripture(transcript, {
+          sessionId,
+          minConfidence,
+          topK: 5  // Limit for live audio
+        })
       ])
 
+      // 4. Enrich references with text from Local DB
+      const enriched = await this.enrichReferences(semanticMatches)
+
       const result = {
-        detected: this.deduplicateReferences(allDetected),
-        suggested: [], // Implement advanced suggestions later if needed
+        detected: this.deduplicateReferences(enriched),
+        suggested: [],
         themes: themes || {},
         sessionId,
         timestamp: Date.now()
@@ -125,9 +135,9 @@ class EnhancedAiService {
     return whisperService.transcribe(audioFile, options)
   }
 
-  async analyzeSermonRealTime(transcript, sessionId) {
+  async analyzeSermonRealTime(transcript, sessionId, options = {}) {
     // Just wrapper for detection
-    return this.detectScripturesComprehensive(transcript, { sessionId })
+    return this.detectScripturesComprehensive(transcript, { sessionId, ...options })
   }
 
   checkServiceAvailability() {

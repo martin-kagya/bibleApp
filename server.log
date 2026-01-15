@@ -1,0 +1,923 @@
+✓ Local Bible database connected
+🎤 Spawning Whisper Child Process...
+[WhisperNative] 🔧 Child Process initializing transformers...
+(node:70631) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Server running on port 8000
+Environment: development
+[WhisperChild] 🔧 Child Process initializing transformers...
+[WhisperNative] 📂 Loading model from /Users/kagya/bibleApp/models...
+[WhisperChild] 📂 Loading model from /Users/kagya/bibleApp/models...
+2026-01-15 00:05:08.066 node[70661:1101823] 2026-01-15 00:05:08.066365 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Shape_4_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.067 node[70661:1101823] 2026-01-15 00:05:08.067011 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_16_output_0'. It is not used by any node and should be removed from the model.
+User connected: zmYmR2Yp-QCduJuFAAAB
+🎤 Spawning Faster-Whisper Python Bridge: python3 /Users/kagya/bibleApp/services/faster_whisper_server.py
+2026-01-15 00:05:08.134 node[70661:1101823] 2026-01-15 00:05:08.134095 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_9_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.134 node[70661:1101823] 2026-01-15 00:05:08.134182 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_11_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.134 node[70661:1101823] 2026-01-15 00:05:08.134220 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_10_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.134 node[70661:1101823] 2026-01-15 00:05:08.134239 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_12_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.134 node[70661:1101823] 2026-01-15 00:05:08.134257 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.135 node[70661:1101823] 2026-01-15 00:05:08.135240 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.135 node[70661:1101823] 2026-01-15 00:05:08.135267 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.405945 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406057 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406107 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406136 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406229 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406255 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406292 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406318 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406346 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406379 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406401 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406429 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406455 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406497 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406520 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406543 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406567 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406590 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406644 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406677 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406700 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406728 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406750 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406777 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406813 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406835 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406858 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406880 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406906 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406940 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.406 node[70661:1101823] 2026-01-15 00:05:08.406965 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.407 node[70661:1101823] 2026-01-15 00:05:08.407011 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.407 node[70661:1101823] 2026-01-15 00:05:08.407047 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.407 node[70661:1101823] 2026-01-15 00:05:08.407095 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.407 node[70661:1101823] 2026-01-15 00:05:08.407120 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.407 node[70661:1101823] 2026-01-15 00:05:08.407148 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408576 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408617 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408654 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408681 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408718 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408741 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408777 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408802 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408838 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408865 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408893 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408950 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.408 node[70661:1101823] 2026-01-15 00:05:08.408975 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409001 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409036 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409122 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409155 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409186 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409212 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409236 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409265 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409303 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409331 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409396 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409426 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409461 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409523 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409548 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409576 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409600 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409639 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409662 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409707 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409731 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/activation_fn/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409785 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/activation_fn/Constant_2_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.409 node[70661:1101823] 2026-01-15 00:05:08.409834 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/activation_fn/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476700 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476776 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476804 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476826 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476904 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476926 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476944 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476961 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.476 node[70661:1101823] 2026-01-15 00:05:08.476978 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.476997 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477016 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477032 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477048 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477065 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477081 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477098 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477114 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477132 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477180 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477198 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477214 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477238 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477260 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477278 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477294 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477310 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477326 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477344 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477359 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477374 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477389 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477405 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477440 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477459 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477477 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477492 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477508 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477528 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477544 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477560 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477576 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477591 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477606 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477624 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477639 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477655 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477685 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477702 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477717 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477733 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477748 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477763 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477780 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477798 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477813 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477831 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477846 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477861 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477877 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477892 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477931 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477947 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477963 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.477 node[70661:1101823] 2026-01-15 00:05:08.477978 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.477993 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478009 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478026 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478042 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478058 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478074 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478088 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478104 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478120 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.478 node[70661:1101823] 2026-01-15 00:05:08.478135 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479025 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479044 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479062 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479080 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479097 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479115 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479131 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479146 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479162 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479179 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479196 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479212 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479227 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479242 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479259 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479289 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479307 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479322 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479339 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479355 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479371 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479387 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479402 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479418 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.9/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479434 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479450 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479467 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479485 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.7/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479500 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479530 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479547 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479563 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479579 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479594 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479610 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479626 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479643 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479661 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479676 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479691 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479709 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479724 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479740 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479781 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479796 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479812 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479827 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479843 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479861 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479882 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479905 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479922 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479938 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479953 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479968 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.479 node[70661:1101823] 2026-01-15 00:05:08.479984 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480000 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480031 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480048 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.11/encoder_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480064 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.4/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480079 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480095 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480110 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.10/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480126 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480141 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.8/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480156 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.3/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480171 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.6/self_attn_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480186 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/final_layer_norm/Constant_1_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480201 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480216 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480232 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.1/self_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480262 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.2/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480278 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.0/encoder_attn_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+2026-01-15 00:05:08.480 node[70661:1101823] 2026-01-15 00:05:08.480293 [W:onnxruntime:, graph.cc:3490 CleanUnusedInitializersAndNodeArgs] Removing initializer '/model/decoder/layers.5/final_layer_norm/Constant_output_0'. It is not used by any node and should be removed from the model.
+[WhisperNative] ✅ Child Process: Whisper model loaded
+[WhisperChild] ✅ Child Process: Whisper model loaded
+✓ Whisper Child Process Ready
+[Python] Loading Faster-Whisper model: base.en on cpu...
+[Python] Model loaded successfully.
+[Python] Ready to process audio.
+✅ Faster-Whisper Service Ready
+⚡ FAISS Index built for bge-base (33684 items, dim: 768)
+✅ Vector Service Initialized
+⚡ FAISS Index built for bge-large (1 items, dim: 1024)
+User connected: lladnG_jqdnPnoHLAAAD
+🎤 Spawning Faster-Whisper Python Bridge: python3 /Users/kagya/bibleApp/services/faster_whisper_server.py
+[Python] Loading Faster-Whisper model: base.en on cpu...
+[Python] Model loaded successfully.
+[Python] Ready to process audio.
+✅ Faster-Whisper Service Ready
+⚡ FAISS Index built for minilm (32309 items, dim: 384)
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🔎 Triggering partial search for: "Experience proves this."
+🕵️‍♂️ Hybrid Search: "Experience proves this...."
+   📝 Keywords: [experience proves]
+🧠 Loading local model: Xenova/bge-base-en-v1.5...
+[FTS] Querying: "experience proves" (raw: "experience proves")
+[FTS] Found 0 results
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+⚡ FAISS Index built for paraphrase (32309 items, dim: 384)
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🔎 Triggering partial search for: "Experience proves this."
+🕵️‍♂️ Hybrid Search: "Experience proves this...."
+   📝 Keywords: [experience proves]
+🧠 Loading local model: Xenova/bge-base-en-v1.5...
+[FTS] Querying: "experience proves" (raw: "experience proves")
+[FTS] Found 0 results
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+✓ Model Xenova/bge-base-en-v1.5 loaded
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: John 19:35, John 6:6, Daniel 1:14
+✓ Model Xenova/bge-base-en-v1.5 loaded
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: John 19:35, John 6:6, Daniel 1:14
+🎤 Received transcript (PARTIAL): "Experience proves this."
+✅ Ollama is online
+✅ Ollama is online
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🔎 Triggering partial search for: "Experience proves this."
+🕵️‍♂️ Hybrid Search: "Experience proves this...."
+   📝 Keywords: [experience proves]
+[FTS] Querying: "experience proves" (raw: "experience proves")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: John 19:35, John 6:6, Daniel 1:14
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🔎 Triggering partial search for: "Experience proves this."
+🕵️‍♂️ Hybrid Search: "Experience proves this...."
+   📝 Keywords: [experience proves]
+[FTS] Querying: "experience proves" (raw: "experience proves")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: John 19:35, John 6:6, Daniel 1:14
+🎤 Received transcript (PARTIAL): "Experience proves this."
+⚡ FAISS Index built for e5 (32309 items, dim: 768)
+✅ All secondary vector stores background loaded
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🔎 Triggering partial search for: "Experience proves this."
+🕵️‍♂️ Hybrid Search: "Experience proves this...."
+   📝 Keywords: [experience proves]
+[FTS] Querying: "experience proves" (raw: "experience proves")
+[FTS] Found 0 results
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+🎤 Received transcript (PARTIAL): "Experience proves this."
+User disconnected: lladnG_jqdnPnoHLAAAD
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: John 19:35, John 6:6, Daniel 1:14
+Faster-Whisper Process exited with code null
+User disconnected: zmYmR2Yp-QCduJuFAAAB
+Faster-Whisper Process exited with code null
+/opt/homebrew/Caskroom/miniforge/base/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+User connected: Mn1_Zc_BnZ6x2L2ZAAAG
+🎤 Spawning Faster-Whisper Python Bridge: python3 /Users/kagya/bibleApp/services/faster_whisper_server.py
+[Python] Loading Faster-Whisper model: base.en on cpu...
+[Python] Model loaded successfully.
+[Python] Ready to process audio.
+✅ Faster-Whisper Service Ready
+🎤 Received transcript (PARTIAL): "Shout flow revisit"
+🔎 Triggering partial search for: "Shout flow revisit"
+🕵️‍♂️ Hybrid Search: "Shout flow revisit..."
+   📝 Keywords: [shout flow revisit]
+[FTS] Querying: "shout flow revisit" (raw: "shout flow revisit")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: Psalm 104:7, Psalm 98:4, Psalm 42:7
+✅ Ollama is online
+🎤 Received transcript (PARTIAL): "Shout flow reverse of living water out of your belly's sharp flow"
+🔎 Triggering partial search for: "Shout flow reverse of living water out of your belly's sharp flow"
+🕵️‍♂️ Hybrid Search: "Shout flow reverse of living water out of your bel..."
+   📝 Keywords: [shout flow reverse living water belly sharp]
+[FTS] Querying: "shout flow reverse living water belly sharp" (raw: "shout flow reverse living water belly sharp")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: Numbers 5:22, Exodus 15:8, Job 20:23
+[Python] Final:  Shout flow reverse of living water.
+[Python] Final:  Out of your bellies, shout flow reverse of living water.
+🎤 Received transcript (FINAL): "Shout flow reverse of living water."
+✅ [Mn1_Zc_BnZ6x2L2ZAAAG] Final: "Shout flow reverse of living water."
+🕵️‍♂️ Hybrid Search: "Shout flow reverse of living water...."
+   📝 Keywords: [shout flow reverse living water]
+[FTS] Querying: "shout flow reverse living water" (raw: "shout flow reverse living water")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: Psalm 104:7, Psalm 78:16, Zechariah 14:8
+🎤 Received transcript (FINAL): "Out of your bellies, shout flow reverse of living water."
+✅ [Mn1_Zc_BnZ6x2L2ZAAAG] Final: "Out of your bellies, shout flow reverse of living water."
+🕵️‍♂️ Hybrid Search: "Out of your bellies, shout flow reverse of living ..."
+   📝 Keywords: [bellies shout flow reverse living water]
+[FTS] Querying: "bellies shout flow reverse living water" (raw: "bellies shout flow reverse living water")
+[FTS] Found 0 results
+🎤 Received transcript (PARTIAL): "Out of your belly, shout flow reverse of"
+🔎 Triggering partial search for: "Out of your belly, shout flow reverse of"
+🕵️‍♂️ Hybrid Search: "Out of your belly, shout flow reverse of..."
+   📝 Keywords: [belly shout flow reverse]
+[FTS] Querying: "belly shout flow reverse" (raw: "belly shout flow reverse")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: Numbers 5:22, Psalms 42:7, Psalm 104:7
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: Numbers 5:22, Job 20:23, Psalm 104:7
+[Python] Final:  out of your belly shall flow rivers of living water the scripture let's understand
+🎤 Received transcript (FINAL): "out of your belly shall flow rivers of living water the scripture let's understand"
+✅ [Mn1_Zc_BnZ6x2L2ZAAAG] Final: "out of your belly shall flow rivers of living water the scripture let's understand"
+🕵️‍♂️ Hybrid Search: "out of your belly shall flow rivers of living wate..."
+   📝 Keywords: [belly flow rivers living water let understand]
+[FTS] Querying: "belly flow rivers living water let understand" (raw: "belly flow rivers living water let understand")
+[FTS] Found 0 results
+   ↳ Vectors: 50 | Keywords: 0
+   ✨ Top Suggestions: John 7:38, Numbers 5:22, Hebrews 10:22
+🎤 Received transcript (PARTIAL): "that faith is a substance."
+🔎 Triggering partial search for: "that faith is a substance."
+🕵️‍♂️ Hybrid Search: "that faith is a substance...."
+   📝 Keywords: [faith substance]
+[FTS] Querying: "faith substance" (raw: "faith substance")
+[FTS] Found 1 results
+   ↳ Vectors: 50 | Keywords: 1
+   ✨ Top Suggestions: Hebrews 11:1, Hebrews 11:3, 1 Timothy 3:9
+[Python] Final:  that faith is a substance.
+🎤 Received transcript (FINAL): "that faith is a substance."
+✅ [Mn1_Zc_BnZ6x2L2ZAAAG] Final: "that faith is a substance."
+🕵️‍♂️ Hybrid Search: "that faith is a substance...."
+   📝 Keywords: [faith substance]
+[FTS] Querying: "faith substance" (raw: "faith substance")
+[FTS] Found 1 results
+   ↳ Vectors: 50 | Keywords: 1
+   ✨ Top Suggestions: Hebrews 11:1, Hebrews 11:3, 1 Timothy 3:9
+🎤 Received transcript (PARTIAL): "Faith is a substance."
+🔎 Triggering partial search for: "Faith is a substance."
+🕵️‍♂️ Hybrid Search: "Faith is a substance...."
+   📝 Keywords: [faith substance]
+[FTS] Querying: "faith substance" (raw: "faith substance")
+[FTS] Found 1 results
+   ↳ Vectors: 50 | Keywords: 1
+   ✨ Top Suggestions: Hebrews 11:1, Hebrews 11:3, James 1:3
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+✅ Ollama is online
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+✅ Ollama is online
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+✅ Ollama is online
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+✅ Ollama is online
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+🎤 Received transcript (PARTIAL): "This is substance."
+🎤 Received transcript (PARTIAL): "This is substance."
+🔎 Triggering partial search for: "This is substance."
+🕵️‍♂️ Hybrid Search: "This is substance...."
+   📝 Keywords: [substance]
+[FTS] Querying: "substance" (raw: "substance")
+[FTS] Found 50 results
+   ↳ Vectors: 50 | Keywords: 50
+   ✨ Top Suggestions: Proverbs 3:9, Proverbs 1:13, Colossians 2:17
+Traceback (most recent call last):
+  File "/Users/kagya/bibleApp/services/faster_whisper_server.py", line 156, in <module>
+    main()
+  File "/Users/kagya/bibleApp/services/faster_whisper_server.py", line 151, in main
+    print(json.dumps(msg), flush=True)
+BrokenPipeError: [Errno 32] Broken pipe

@@ -15,11 +15,31 @@ export const ScriptureProvider = ({ children }) => {
   const [detectedScriptures, setDetectedScriptures] = useState([])
   const [suggestedScriptures, setSuggestedScriptures] = useState([])
   const [themes, setThemes] = useState(null)
+
+  // Preview State (Local)
   const [currentScripture, setCurrentScripture] = useState(null)
+
+  // Live State (Broadcasted)
+  const [liveScripture, setLiveScripture] = useState(null)
+
+  // Live Audio Transcript
+  const [liveTranscript, setLiveTranscript] = useState('')
+
+  // Projection History State
+  const [projectionHistory, setProjectionHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('projectionHistory')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [socket, setSocket] = useState(null)
   const [sessionId, setSessionId] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [isSmartAnalyzing, setIsSmartAnalyzing] = useState(false)
 
   // Initialize Socket.io connection
   useEffect(() => {
@@ -55,6 +75,85 @@ export const ScriptureProvider = ({ children }) => {
       setThemes(data.themes || null)
     })
 
+    // Live Presentation Updates
+    newSocket.on('live-update', (data) => {
+      console.log('🔴 Live Update:', data);
+      setLiveScripture(data);
+    })
+
+    // Live Audio Analysis Results
+    newSocket.on('analysis-result', (data) => {
+      console.log('🎤 Live audio analysis:', data)
+
+      const incomingDetections = (data.detected || []).map(d => ({
+        ...d,
+        isSmart: data.isSmart || d.isSmart,
+        reasoning: data.reasoning || d.reasoning
+      }))
+
+      if (incomingDetections.length > 0) {
+        setDetectedScriptures(prev => {
+          // Create a Map for easy reference-based lookup/deduplication
+          const combined = new Map();
+
+          // Add existing ones first to preserve order (they will be overwritten if duplicate)
+          prev.forEach(item => combined.set(item.reference, item));
+
+          // Add/Update with new ones
+          incomingDetections.forEach(item => {
+            const existing = combined.get(item.reference);
+            if (existing) {
+              // Update existing item with new data (if smart lane found more info)
+              combined.set(item.reference, {
+                ...existing,
+                ...item,
+                isSmart: existing.isSmart || item.isSmart,
+                reasoning: item.reasoning || existing.reasoning
+              });
+            } else {
+              combined.set(item.reference, item);
+            }
+          });
+
+          // Convert back to array and keep only the last 10 items to prevent infinite list growth
+          const result = Array.from(combined.values());
+          return result.slice(-10);
+        });
+      }
+
+      if (data.isSmart) {
+        setIsSmartAnalyzing(false) // Stop spinner
+      }
+
+      if (data.suggested) setSuggestedScriptures(data.suggested)
+      if (data.themes) setThemes(data.themes)
+    })
+
+    // Status Updates (for UI spinners)
+    newSocket.on('analysis-status', (data) => {
+      if (data.state === 'analyzing') {
+        setIsSmartAnalyzing(true)
+      } else {
+        setIsSmartAnalyzing(false)
+      }
+    })
+
+    // Transcript Updates
+    newSocket.on('transcript-update', (data) => {
+      console.log('📝 Transcript:', data.transcript)
+      setLiveTranscript(data.fullContext || data.transcript)
+    })
+
+    // Context Cleared
+    newSocket.on('context-cleared', () => {
+      console.log('🧹 Context cleared')
+      setDetectedScriptures([])
+      setSuggestedScriptures([])
+      setThemes(null)
+      setLiveTranscript('')
+      setIsSmartAnalyzing(false)
+    })
+
     newSocket.on('session-ended', (data) => {
       console.log('✓ Session ended:', data.sessionId)
       setSessionId(null)
@@ -62,6 +161,7 @@ export const ScriptureProvider = ({ children }) => {
 
     newSocket.on('error', (data) => {
       console.error('❌ Socket error:', data.message)
+      setIsSmartAnalyzing(false)
     })
 
     setSocket(newSocket)
@@ -142,7 +242,7 @@ export const ScriptureProvider = ({ children }) => {
     }
   }, [])
 
-  // Display scripture in presentation mode
+  // Display scripture in presentation mode (Preview)
   const displayScripture = useCallback(async (scripture) => {
     const scriptureData = await getScriptureText(scripture.reference)
     if (scriptureData) {
@@ -153,6 +253,44 @@ export const ScriptureProvider = ({ children }) => {
       })
     }
   }, [getScriptureText])
+
+  // Go Live (Broadcast)
+  const goLive = useCallback((scripture) => {
+    if (socket && scripture) {
+      console.log('🚀 Sending go-live:', scripture.reference);
+      // Optimistic Update: Update local state immediately
+      setLiveScripture(scripture);
+      socket.emit('go-live', scripture);
+
+      // Add to projection history
+      setProjectionHistory(prev => {
+        const historyItem = {
+          id: Date.now(),
+          reference: scripture.reference,
+          text: scripture.text,
+          translation: scripture.translation || 'KJV',
+          book: scripture.book,
+          chapter: scripture.chapter,
+          verse: scripture.verse,
+          timestamp: new Date().toISOString()
+        }
+        // Avoid duplicates of the same reference in a row
+        if (prev.length > 0 && prev[0].reference === scripture.reference) {
+          return prev
+        }
+        const updated = [historyItem, ...prev].slice(0, 50) // Keep last 50 items
+        localStorage.setItem('projectionHistory', JSON.stringify(updated))
+        return updated
+      })
+    }
+  }, [socket]);
+
+  const clearLive = useCallback(() => {
+    setLiveScripture(null); // Optimistic clear
+    if (socket) {
+      socket.emit('clear-live');
+    }
+  }, [socket]);
 
   // Semantic search
   const searchSemantic = useCallback(async (query, topK = 10, priority = 'BOTH') => {
@@ -170,7 +308,7 @@ export const ScriptureProvider = ({ children }) => {
       }
 
       const data = await response.json()
-      return data.results || []
+      return Array.isArray(data) ? data : (data.results || [])
     } catch (error) {
       console.error('Error searching:', error)
       return []
@@ -188,17 +326,40 @@ export const ScriptureProvider = ({ children }) => {
     setCurrentScripture(null)
   }, [])
 
+  // Clear projection history
+  const clearHistory = useCallback(() => {
+    setProjectionHistory([])
+    localStorage.removeItem('projectionHistory')
+  }, [])
+
+  // Remove single item from history
+  const removeFromHistory = useCallback((id) => {
+    setProjectionHistory(prev => {
+      const updated = prev.filter(item => item.id !== id)
+      localStorage.setItem('projectionHistory', JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
   const value = {
     detectedScriptures,
     suggestedScriptures,
     themes,
-    currentScripture,
+    currentScripture, // Preview
+    liveScripture,    // Live
+    liveTranscript,   // Live audio transcript
+    projectionHistory, // Projection history
     isAnalyzing,
+    isSmartAnalyzing,
     isConnected,
     sessionId,
     detectScriptures,
     getScriptureText,
     displayScripture,
+    goLive,
+    clearLive,
+    clearHistory,
+    removeFromHistory,
     searchSemantic,
     clearCurrentScripture,
     clearAll,
