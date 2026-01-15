@@ -55,7 +55,11 @@ class ParallelSearchService {
 
         // 2. FAST LANE: Hybrid
         try {
-            fastResults = await vectorDbService.searchHybrid(query, { topK: 6, useHotfixes: true });
+            fastResults = await vectorDbService.searchHybrid(query, {
+                topK: 6,
+                useHotfixes: true,
+                isFinal // Pass this down to control reranking
+            });
             if (fastResults.length > 0) {
                 // The searchHybrid already reranks and returns scores in 0-1 range
                 let qualityResults = fastResults.filter(r => (r.confidence || r.similarity || 0) > 0.3).slice(0, 3);
@@ -84,7 +88,7 @@ class ParallelSearchService {
                 if (bestFastScore < 0.5) {
                     const noiseControlKeywords = await ollamaService.denoiseTranscript(query);
                     if (noiseControlKeywords.length > 0) {
-                        const deepResults = await vectorDbService.searchHybrid(noiseControlKeywords.join(' '), { topK: 5, useHotfixes: true });
+                        const deepResults = await vectorDbService.searchHybrid(noiseControlKeywords.join(' '), { topK: 5, useHotfixes: true, isFinal });
                         deepResults.forEach(dr => { if (!candidates.find(c => c.reference === dr.reference)) candidates.push(dr); });
                     }
                 }

@@ -24,6 +24,17 @@ def log(msg):
     sys.stderr.write(f"[Python] {msg}\n")
     sys.stderr.flush()
 
+def safe_print(msg_obj):
+    """Safely print JSON to stdout with error handling."""
+    try:
+        print(json.dumps(msg_obj), flush=True)
+    except BrokenPipeError:
+        log("Broken pipe on stdout, exiting...")
+        global running
+        running = False
+    except Exception as e:
+        log(f"Print error: {e}")
+
 def read_stdin():
     """Reads audio from stdin and puts chunks into queue."""
     global running
@@ -32,8 +43,12 @@ def read_stdin():
         try:
             data = sys.stdin.buffer.read(chunk_size)
             if not data:
+                log("Stdin closed, exiting...")
                 break
             audio_queue.put(data)
+        except EOFError:
+            log("EOF on stdin, exiting...")
+            break
         except Exception as e:
             log(f"Stdin Error: {e}")
             break
@@ -46,6 +61,11 @@ def main():
         log("Model loaded successfully.")
     except Exception as e:
         log(f"Failed to load model: {e}")
+        # Signal failure if possible
+        try:
+            print(json.dumps({"type": "error", "message": str(e)}), flush=True)
+        except:
+            pass
         return
 
     # Start reader thread
@@ -53,7 +73,7 @@ def main():
     reader_thread.start()
 
     log("Ready to process audio.")
-    print(json.dumps({"type": "ready"}), flush=True)
+    safe_print({"type": "ready"})
 
     # Buffer for audio float32 (normalized)
     audio_buffer = np.array([], dtype=np.float32)
@@ -65,10 +85,13 @@ def main():
     while running:
         # 1. Consume Queue
         new_data = bytearray()
-        while not audio_queue.empty():
-            new_data.extend(audio_queue.get())
-            has_new_audio = True
-            last_audio_time = time.time()
+        try:
+            while not audio_queue.empty():
+                new_data.extend(audio_queue.get())
+                has_new_audio = True
+                last_audio_time = time.time()
+        except Exception as e:
+            log(f"Queue Error: {e}")
         
         if new_data:
             # Convert PCM16 -> Float32
@@ -101,16 +124,20 @@ def main():
             last_transcription_time = now
             has_new_audio = False # Reset flag
             
-            segments, info = model.transcribe(
-                audio_buffer, 
-                beam_size=1,
-                language="en", 
-                condition_on_previous_text=False,
-                vad_filter=True,
-                vad_parameters=dict(min_silence_duration_ms=500)
-            )
-            
-            segments = list(segments)
+            try:
+                segments, info = model.transcribe(
+                    audio_buffer, 
+                    beam_size=1,
+                    language="en", 
+                    condition_on_previous_text=False,
+                    vad_filter=True,
+                    vad_parameters=dict(min_silence_duration_ms=500)
+                )
+                
+                segments = list(segments)
+            except Exception as e:
+                log(f"Transcription Error: {e}")
+                continue
             
             if not segments:
                 if force_finalize:
@@ -129,7 +156,7 @@ def main():
             for i in range(final_segments_count):
                 seg = segments[i]
                 msg = {"type": "final", "text": seg.text.strip(), "start": seg.start, "end": seg.end}
-                print(json.dumps(msg), flush=True)
+                safe_print(msg)
                 log(f"Final: {seg.text}")
                 
             # Remove finalized audio from buffer
@@ -146,9 +173,14 @@ def main():
             if not force_finalize and final_segments_count < len(segments):
                 partial_seg = segments[-1]
                 msg = {"type": "partial", "text": partial_seg.text.strip()}
-                print(json.dumps(msg), flush=True)
+                safe_print(msg)
         
         time.sleep(0.01) # fast loop to drain queue
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        log(f"FATAL: {e}")

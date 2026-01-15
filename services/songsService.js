@@ -6,6 +6,8 @@
 
 const STORAGE_KEY = 'pneumavoice_songs';
 
+const STOP_WORDS = new Set(['i', 'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'in', 'on', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'you', 'your', 'my', 'me', 'our']);
+
 /**
  * Get all songs from storage
  * @returns {Array} Array of song objects
@@ -90,14 +92,71 @@ export const deleteSong = (id) => {
  * @param {string} query - Search query
  * @returns {Array} Matching songs
  */
-export const searchSongs = (query) => {
-    const songs = getAllSongs();
-    const lowerQuery = query.toLowerCase().trim();
+export const searchSongs = (query, songs) => {
+    if (!songs) return [];
+    const lowerQuery = (query || '').toLowerCase().trim();
     if (!lowerQuery) return songs;
 
-    return songs.filter(song =>
-        song.title.toLowerCase().includes(lowerQuery)
-    );
+    const allWords = lowerQuery.split(/\s+/).filter(Boolean);
+    const significantWords = allWords.filter(w => !STOP_WORDS.has(w) && w.length > 2);
+
+    // Fallback to all words if searching exclusively for common terms
+    const searchWords = significantWords.length > 0 ? significantWords : allWords;
+    const isPhrase = allWords.length > 1;
+
+    const results = songs
+        .map(song => {
+            let score = 0;
+            const title = (song.title || '').toLowerCase();
+            const lyrics = (song.lyrics || '').toLowerCase();
+
+            // 1. PHRASE MATCHING (CRITICAL)
+            if (title === lowerQuery) {
+                score += 1000000; // Perfect match
+            } else if (title.startsWith(lowerQuery)) {
+                score += 500000; // Start match
+            } else if (title.includes(lowerQuery)) {
+                score += 200000; // Phrase contains
+            }
+
+            // Lyrics phrase match
+            if (lowerQuery.length >= 4 && lyrics.includes(lowerQuery)) {
+                score += 100000;
+            }
+
+            // 2. KEYWORD MATCHING
+            let titleHits = 0;
+            searchWords.forEach(w => { if (title.includes(w)) titleHits++; });
+
+            let lyricsHits = 0;
+            searchWords.forEach(w => { if (lyrics.includes(w)) lyricsHits++; });
+
+            // Title weighted matches
+            score += (titleHits / searchWords.length) * 50000;
+
+            // Lyrics matches - require higher density for multi-word queries
+            if (isPhrase) {
+                if (lyricsHits === searchWords.length) {
+                    score += 20000;
+                } else if (lyricsHits >= searchWords.length * 0.75) {
+                    score += 10000;
+                }
+            } else if (lyricsHits > 0) {
+                score += 5000;
+            }
+
+            return { ...song, searchScore: score };
+        })
+        .filter(song => song.searchScore >= 10000); // Strict filter to eliminate noise
+
+    return results
+        .sort((a, b) => {
+            if (b.searchScore !== a.searchScore) return b.searchScore - a.searchScore;
+            // Shorter titles rank higher for same score (more precise)
+            if (a.title.length !== b.title.length) return a.title.length - b.title.length;
+            return a.title.localeCompare(b.title);
+        })
+        .map(({ searchScore, ...song }) => song);
 };
 
 /**

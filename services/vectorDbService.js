@@ -245,7 +245,7 @@ class VectorDbService {
 
   async searchHybrid(query, options = {}) {
     if (!this.isReady) await this.init()
-    const { topK = 10, alpha = 0.5, priority = 'BOTH', useHotfixes = false, useReranker = true } = options
+    const { topK = 10, alpha = 0.5, priority = 'BOTH', useHotfixes = false, useReranker = true, isFinal = false } = options
     console.log(`🕵️‍♂️ Hybrid Search: "${query.substring(0, 50)}..." [Hotfixes: ${useHotfixes}, Reranker: ${useReranker}]`)
 
     // 1. Keyword Extraction
@@ -279,7 +279,9 @@ class VectorDbService {
       .slice(0, Math.max(topK * 2, 20)) // Get enough candidates for reranking
 
     // 4. Verification & Reranking Stage
-    if (useReranker && candidates.length > 0) {
+    const shouldRerank = useReranker && candidates.length > 0 && isFinal;
+
+    if (shouldRerank) {
       try {
         await rerankerService.init(options.rerankerModel || 'bge-reranker-base')
         const reranked = await rerankerService.rerank(query, candidates, topK)
@@ -295,6 +297,16 @@ class VectorDbService {
         // Fallback to top fused results if reranking fails
         candidates = candidates.slice(0, topK)
       }
+    } else if (!isFinal && candidates.length > 0) {
+      // For partial results, just take top fused candidates without the expensive rerank
+      // console.log('   ⏭ Skipping reranker for partial result');
+      candidates = candidates.slice(0, topK).map((c, i) => {
+        // Still give the top one a slight confidence boost if it's okayish
+        if (i === 0 && c.confidence > 0.01) {
+          return { ...c, confidence: Math.max(c.confidence, 0.4) }
+        }
+        return c;
+      });
     } else {
       // If no reranker, boost top result confidence to ensure it passes threshold if it's a good match
       candidates = candidates.slice(0, topK).map((c, i) => {
