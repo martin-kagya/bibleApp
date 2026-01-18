@@ -24,7 +24,8 @@ const BIBLE_LEMMA_MAP = [
   "Hezekiah", "Ishbosheth", "Jedidiah", "Kiriath", "Leviticus", "Methuselah", "Naphtali", "Onesiphorus", "Potiphar", "Quirinius",
   "Rehoboam", "Shadrach", "Tiglath-Pileser", "Uriah", "Vashti", "Zacchaeus", "Zedekiah", "Zipporah", "Bethlehem", "Nazareth", "Jerusalem",
   "Tabernacle", "Testimony", "Covenant", "Righteousness", "Sanctuary", "Prophecy", "Wilderness", "Sacrifice", "Inheritance", "Redemption",
-  "Bozrah", "Sennacherib", "Cyrus", "Darius", "Xerxes", "Uzziah", "Jereboam", "Lively", "Edifice", "Priesthood", "Spiritual", "House"
+  "Bozrah", "Sennacherib", "Cyrus", "Darius", "Xerxes", "Uzziah", "Jereboam", "Lively", "Edifice", "Priesthood", "Spiritual", "House",
+  "Concerning", "Witnessing", "Ministries", "Pneuma", "Acknowledge"
 ];
 
 // Model Configurations
@@ -72,7 +73,10 @@ class VectorDbService {
       'revelations': 'revelation', 'rubabell': 'zerubbabel', 'leibon': 'laban', 'leibn': 'laban', 'lee-man': 'laban', 'stunance': 'stones',
       'boozra': 'bozrah', 'bozra': 'bozrah', 'eddy': 'edifice', 'face': 'edifice', // eddy face -> edifice
       'release': 'lively', // life release -> lively
-      'encompassed': 'compassed', 'encompass': 'compass' // KJV mapping
+      'encompassed': 'compassed', 'encompass': 'compass', // KJV mapping
+      'bodhir': 'jerusalem', 'salaam': 'jerusalem', // bodhir salaam -> jerusalem
+      'samyraim': 'samaria', 'athamus': 'uttermost', 'samanpika': 'simon peter',
+      'asaptor': 'acts chapter', 'cockpew': 'cock crow', 'baddisha': 'but ye shall'
     }
     const stopWords = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'they', 'shall', 'will', 'have', 'been', 'were', 'not', 'but', 'all', 'one', 'two', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'are', 'was', 'were', 'has', 'had', 'am', 'does', 'did', 'done', 'should', 'might', 'must', 'may', 'verse', 'chapter', 'book', 'bible', 'scripture'])
 
@@ -285,7 +289,7 @@ class VectorDbService {
       candidates = Array.from(fusionMap.values())
         .map(entry => ({ ...entry.item, confidence: entry.score }))
         .sort((a, b) => b.confidence - a.confidence)
-        .slice(0, Math.max(topK * 2, 20)) // Get enough candidates for reranking
+        .slice(0, Math.max(topK * 2, 10)) // Reduced from 20 to 10 for latency target
 
       if (candidates.length > 0) {
         console.log(`   ↳ Vectors: ${vectorResults.length} | Keywords: ${keywordResults.length}`);

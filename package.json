@@ -19,6 +19,8 @@
     "test:sermon": "node test-preacher-sermon.js",
     "electron": "electron .",
     "electron:build": "electron-builder",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:all": "electron-rebuild -f -w better-sqlite3,faiss-node,sqlite3",
     "build:all": "npm run build && npm run electron:build"
   },
   "dependencies": {

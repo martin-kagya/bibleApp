@@ -5,16 +5,19 @@ import time
 import threading
 import queue
 import numpy as np
+import signal
+import atexit
 from faster_whisper import WhisperModel
 
 # Configuration
-MODEL_SIZE = "base.en"  # "tiny", "base", "small", "medium", "large-v3"
-DEVICE = "cpu"          # "cuda" if GPU is available (mac: "cpu" usually, or "mps" but CTranslate2 might need specific build)
+MODEL_SIZE = "small.en"  # Balanced for speed and accuracy
+DEVICE = "cpu"          # "cuda" if GPU is available
 COMPUTE_TYPE = "int8"   # or "float32"
 SAMPLE_RATE = 16000
 CHANNELS = 1
 BYTES_PER_SAMPLE = 2     # 16-bit
-WINDOW_STEP = 0.5       # Transcribe every 0.5s of new audio
+WINDOW_STEP = 0.4       # Transcribe every 0.4s of new audio (lowered from 0.5s)
+INITIAL_PROMPT = "Pneuma World Ministries, Bishop Isaac Oti Boateng, Hallelujah, Amen, Scripture, Genesis, Revelation, Jesus Christ, Holy Spirit, Witnessing."
 
 # Global State
 audio_queue = queue.Queue()
@@ -129,9 +132,13 @@ def main():
                     audio_buffer, 
                     beam_size=1,
                     language="en", 
-                    condition_on_previous_text=False,
+                    initial_prompt=INITIAL_PROMPT,
+                    condition_on_previous_text=True, # Improved context
                     vad_filter=True,
-                    vad_parameters=dict(min_silence_duration_ms=500)
+                    vad_parameters=dict(
+                        min_silence_duration_ms=400, # Faster VAD triggering
+                        speech_pad_ms=200
+                    )
                 )
                 
                 segments = list(segments)
@@ -177,10 +184,27 @@ def main():
         
         time.sleep(0.01) # fast loop to drain queue
 
+def signal_handler(sig, frame):
+    log(f"Received signal {sig}, initiating shutdown...")
+    global running
+    running = False
+
+def cleanup():
+    log("Running cleanup...")
+    # Add any specific model cleanup if required by Faster-Whisper
+    # Currently, letting references go is usually enough, but explicit is better for multiproc
+    log("Cleanup complete.")
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    atexit.register(cleanup)
+    
     try:
         main()
     except KeyboardInterrupt:
         pass
     except Exception as e:
         log(f"FATAL: {e}")
+    finally:
+        log("Process exiting.")

@@ -107,8 +107,33 @@ class FasterWhisperService extends EventEmitter {
 
     shutdown() {
         if (this.pythonProcess) {
-            console.log('🛑 Shutting down Faster-Whisper Python Bridge');
-            this.pythonProcess.kill();
+            console.log('🛑 Shutting down Faster-Whisper Python Bridge gracefully...');
+
+            try {
+                // 1. Close stdin to signal EOF to the Python process
+                if (this.pythonProcess.stdin) {
+                    this.pythonProcess.stdin.end();
+                }
+
+                // 2. Send SIGTERM to trigger signal handlers
+                this.pythonProcess.kill('SIGTERM');
+
+                // 3. Set a timeout to force kill if it doesn't exit
+                const forceKillTimeout = setTimeout(() => {
+                    if (this.pythonProcess) {
+                        console.log('⚠️ Process did not exit gracefully, force killing...');
+                        this.pythonProcess.kill('SIGKILL');
+                    }
+                }, 2000);
+
+                this.pythonProcess.on('exit', () => {
+                    clearTimeout(forceKillTimeout);
+                });
+            } catch (e) {
+                console.error('Error during shutdown:', e);
+                this.pythonProcess.kill('SIGKILL');
+            }
+
             this.pythonProcess = null;
             this.isReady = false;
             this.isInitializing = false;

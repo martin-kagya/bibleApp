@@ -57,7 +57,7 @@ class OllamaService {
                 model: this.models.fast,
                 prompt: prompt,
                 stream: false,
-                options: { temperature: 0.1, num_predict: 20 }
+                options: { temperature: 0.1, num_predict: 10 } // Reduced for speed
             }, {
                 timeout: 20000, // Increased to 20s
                 signal: this.currentController.signal
@@ -110,7 +110,7 @@ class OllamaService {
                 prompt: prompt,
                 stream: false,
                 format: 'json',
-                options: { temperature: 0.1, num_predict: 40 } // Reduced for speed
+                options: { temperature: 0.1, num_predict: 30 } // Reduced for speed
             }, {
                 timeout: 60000, // Increased to 60s to prevent timeouts on slow CPUs
                 signal: this.currentController.signal
@@ -129,6 +129,41 @@ class OllamaService {
         } catch (e) {
             if (e.name !== 'CanceledError' && e.name !== 'AbortError') {
                 console.error('Ollama verification failed:', e.message);
+            }
+        }
+        return null;
+    }
+
+    async extractBiblicalIntent(transcript) {
+        if (!await this.checkAvailability()) return null;
+
+        this.abortOngoing();
+        this.currentController = new AbortController();
+
+        const prompt = `Speaker: "${transcript}"
+        Summarize core theology in 3 words max.
+        Example: "God's love", "healing faith".
+        Output ONLY summary.`;
+
+        try {
+            const response = await axios.post(`${this.baseUrl}/api/generate`, {
+                model: this.models.fast,
+                prompt: prompt,
+                stream: false,
+                options: { temperature: 0.1, num_predict: 5 } // Minimal for speed
+            }, {
+                timeout: 10000,
+                signal: this.currentController.signal
+            });
+
+            this.currentController = null;
+
+            if (response.data && response.data.response) {
+                return response.data.response.replace(/[".]/g, '').trim();
+            }
+        } catch (e) {
+            if (e.name !== 'CanceledError' && e.name !== 'AbortError') {
+                console.error('Ollama intent extraction failed:', e.message);
             }
         }
         return null;
