@@ -59,7 +59,7 @@ class OllamaService {
                 stream: false,
                 options: { temperature: 0.1, num_predict: 20 }
             }, {
-                timeout: 10000,
+                timeout: 20000, // Increased to 20s
                 signal: this.currentController.signal
             });
 
@@ -110,9 +110,9 @@ class OllamaService {
                 prompt: prompt,
                 stream: false,
                 format: 'json',
-                options: { temperature: 0.1, num_predict: 80 }
+                options: { temperature: 0.1, num_predict: 40 } // Reduced for speed
             }, {
-                timeout: 18000,
+                timeout: 60000, // Increased to 60s to prevent timeouts on slow CPUs
                 signal: this.currentController.signal
             });
 

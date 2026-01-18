@@ -1,6 +1,56 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import io from 'socket.io-client'
 
+// Helper to open live display window on extended display
+const openLiveDisplayWindow = () => {
+  try {
+    if (window.electron && window.electron.openProjector) {
+      console.log('Using Electron projector window (supports extended displays)');
+      window.electron.openProjector();
+      return;
+    }
+
+    let windowFeatures = 'width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no,scrollbars=no';
+
+    try {
+      const x = screen.width - 200;
+      const y = 0;
+      windowFeatures += `,left=${x},top=${y}`;
+    } catch (e) {
+      console.warn('Could not calculate extended display position:', e);
+    }
+
+    const liveUrl = window.location.origin + '/live';
+    const liveWindow = window.open(liveUrl, 'pneumavoice_live_display', windowFeatures);
+
+    if (liveWindow) {
+      liveWindow.focus();
+      setTimeout(() => {
+        try {
+          if (liveWindow && !liveWindow.closed) {
+            try {
+              const targetX = screen.width + 100;
+              liveWindow.moveTo(targetX, 0);
+            } catch (moveError) {
+              console.log('Could not move window:', moveError);
+              liveWindow.resizeTo(1920, 1080);
+            }
+            liveWindow.focus();
+          }
+        } catch (e) {
+          console.log('Could not position live display window:', e);
+        }
+      }, 500);
+      return liveWindow;
+    } else {
+      console.error('Failed to open live display window. Check if popups are blocked.');
+    }
+  } catch (e) {
+    console.warn('Could not open live display window:', e);
+  }
+  return null;
+};
+
 const ScriptureContext = createContext()
 
 export const useScripture = () => {
@@ -18,12 +68,14 @@ export const ScriptureProvider = ({ children }) => {
 
   // Preview State (Local)
   const [currentScripture, setCurrentScripture] = useState(null)
-
+  // Lexicon Sync State (Background)
+  const [lexiconScripture, setLexiconScripture] = useState(null)
   // Live State (Broadcasted)
   const [liveScripture, setLiveScripture] = useState(null)
-
   // Live Audio Transcript
   const [liveTranscript, setLiveTranscript] = useState('')
+  // Unified Preview State
+  const [previewContent, setPreviewContent] = useState(null)
 
   // Projection History State
   const [projectionHistory, setProjectionHistory] = useState(() => {
@@ -75,16 +127,17 @@ export const ScriptureProvider = ({ children }) => {
       setThemes(data.themes || null)
     })
 
-    // Live Presentation Updates
     newSocket.on('live-update', (data) => {
-      console.log('🔴 Live Update:', data);
-      setLiveScripture(data);
+      console.log('🔴 Live Update received:', data);
+      if (data === null) {
+        setLiveScripture(null);
+      } else if (data) {
+        setLiveScripture(data);
+      }
     })
 
-    // Live Audio Analysis Results
     newSocket.on('analysis-result', (data) => {
       console.log('🎤 Live audio analysis:', data)
-
       const incomingDetections = (data.detected || []).map(d => ({
         ...d,
         isSmart: data.isSmart || d.isSmart,
@@ -93,17 +146,11 @@ export const ScriptureProvider = ({ children }) => {
 
       if (incomingDetections.length > 0) {
         setDetectedScriptures(prev => {
-          // Create a Map for easy reference-based lookup/deduplication
           const combined = new Map();
-
-          // Add existing ones first to preserve order (they will be overwritten if duplicate)
           prev.forEach(item => combined.set(item.reference, item));
-
-          // Add/Update with new ones
           incomingDetections.forEach(item => {
             const existing = combined.get(item.reference);
             if (existing) {
-              // Update existing item with new data (if smart lane found more info)
               combined.set(item.reference, {
                 ...existing,
                 ...item,
@@ -114,22 +161,18 @@ export const ScriptureProvider = ({ children }) => {
               combined.set(item.reference, item);
             }
           });
-
-          // Convert back to array and keep only the last 10 items to prevent infinite list growth
           const result = Array.from(combined.values());
           return result.slice(-10);
         });
       }
 
       if (data.isSmart) {
-        setIsSmartAnalyzing(false) // Stop spinner
+        setIsSmartAnalyzing(false)
       }
-
       if (data.suggested) setSuggestedScriptures(data.suggested)
       if (data.themes) setThemes(data.themes)
     })
 
-    // Status Updates (for UI spinners)
     newSocket.on('analysis-status', (data) => {
       if (data.state === 'analyzing') {
         setIsSmartAnalyzing(true)
@@ -138,13 +181,11 @@ export const ScriptureProvider = ({ children }) => {
       }
     })
 
-    // Transcript Updates
     newSocket.on('transcript-update', (data) => {
       console.log('📝 Transcript:', data.transcript)
       setLiveTranscript(data.fullContext || data.transcript)
     })
 
-    // Context Cleared
     newSocket.on('context-cleared', () => {
       console.log('🧹 Context cleared')
       setDetectedScriptures([])
@@ -206,9 +247,7 @@ export const ScriptureProvider = ({ children }) => {
     try {
       const response = await fetch('/api/ai/detect-scriptures', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transcript, sessionId }),
       })
 
@@ -230,7 +269,7 @@ export const ScriptureProvider = ({ children }) => {
   // Get scripture text by reference
   const getScriptureText = useCallback(async (reference) => {
     try {
-      const response = await fetch(`/api/scriptures/${encodeURIComponent(reference)}`)
+      const response = await fetch(`/api/scriptures/verse/${encodeURIComponent(reference)}`)
       if (!response.ok) {
         throw new Error('Failed to fetch scripture')
       }
@@ -242,65 +281,113 @@ export const ScriptureProvider = ({ children }) => {
     }
   }, [])
 
-  // Display scripture in presentation mode (Preview)
+  // Display Scripture (Preview)
   const displayScripture = useCallback(async (scripture) => {
+    const optimisticContent = {
+      type: 'scripture',
+      reference: scripture.reference,
+      text: scripture.text,
+      content: scripture.text,
+      translation: scripture.translation || 'KJV',
+      confidence: scripture.confidence
+    };
+
+    setCurrentScripture(optimisticContent);
+    setPreviewContent(optimisticContent);
+    setLexiconScripture(optimisticContent); // Sync to Lexicon
+
     const scriptureData = await getScriptureText(scripture.reference)
     if (scriptureData) {
-      setCurrentScripture({
-        ...scripture,
+      const content = {
+        type: 'scripture',
+        reference: scripture.reference,
+        title: scripture.reference,
         text: scriptureData.text,
-        context: scriptureData.context
-      })
+        content: scriptureData.text,
+        context: scriptureData.context,
+        translation: scripture.translation || 'KJV'
+      };
+      setCurrentScripture(content);
+      setPreviewContent(content);
+      setLexiconScripture(content);
     }
   }, [getScriptureText])
 
   // Go Live (Broadcast)
-  const goLive = useCallback((scripture) => {
+  const goLive = useCallback(async (scripture) => {
     if (socket && scripture) {
-      console.log('🚀 Sending go-live:', scripture.reference);
-      // Optimistic Update: Update local state immediately
-      setLiveScripture(scripture);
-      socket.emit('go-live', scripture);
+      console.log('🚀 Preparing go-live for:', scripture);
 
-      // Add to projection history
-      setProjectionHistory(prev => {
-        const historyItem = {
-          id: Date.now(),
-          reference: scripture.reference,
-          text: scripture.text,
-          translation: scripture.translation || 'KJV',
-          book: scripture.book,
-          chapter: scripture.chapter,
-          verse: scripture.verse,
-          timestamp: new Date().toISOString()
+      let finalScripture = { ...scripture };
+
+      // Sync with Lexicon
+      setLexiconScripture(finalScripture);
+
+      // Ensure type is distinct
+      if (finalScripture.reference && !finalScripture.type) {
+        finalScripture.type = 'scripture';
+      }
+
+      // Fetch canonical text from local DB
+      if (finalScripture.type === 'scripture') {
+        const fullData = await getScriptureText(finalScripture.reference);
+        if (fullData) {
+          finalScripture = {
+            ...finalScripture,
+            ...fullData,
+            content: fullData.text
+          };
+          setLexiconScripture(finalScripture);
         }
-        // Avoid duplicates of the same reference in a row
-        if (prev.length > 0 && prev[0].reference === scripture.reference) {
-          return prev
-        }
-        const updated = [historyItem, ...prev].slice(0, 50) // Keep last 50 items
-        localStorage.setItem('projectionHistory', JSON.stringify(updated))
-        return updated
-      })
+      }
+
+      console.log('🚀 Sending go-live payload:', finalScripture.reference);
+
+      // Optimistic Update
+      setLiveScripture(finalScripture);
+      socket.emit('go-live', finalScripture);
+
+      // Auto-open live display window
+      setTimeout(() => {
+        openLiveDisplayWindow();
+      }, 200);
+
+      // Add to projection history (Only if it's a scripture)
+      if (finalScripture.type === 'scripture' && finalScripture.reference) {
+        setProjectionHistory(prev => {
+          const filtered = prev.filter(item => item.reference !== finalScripture.reference)
+          const historyItem = {
+            id: Date.now(),
+            reference: finalScripture.reference,
+            text: finalScripture.text || finalScripture.content,
+            translation: finalScripture.translation || 'KJV',
+            book: finalScripture.book,
+            chapter: finalScripture.chapter,
+            verse: finalScripture.verse,
+            timestamp: new Date().toISOString()
+          }
+          const updated = [historyItem, ...filtered].slice(0, 50)
+          localStorage.setItem('projectionHistory', JSON.stringify(updated))
+          return updated
+        })
+      }
     }
-  }, [socket]);
+  }, [socket, getScriptureText]);
 
   const clearLive = useCallback(() => {
-    setLiveScripture(null); // Optimistic clear
+    setLiveScripture(null);
     if (socket) {
       socket.emit('clear-live');
     }
   }, [socket]);
 
   // Semantic search
-  const searchSemantic = useCallback(async (query, topK = 10, priority = 'BOTH') => {
+  const searchSemantic = useCallback(async (query, topK = 10, priority = 'BOTH', options = {}) => {
     try {
       const response = await fetch('/api/ai/search-semantic', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query, topK, sessionId, priority }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, topK, sessionId, priority, ...options }),
       })
 
       if (!response.ok) {
@@ -341,38 +428,40 @@ export const ScriptureProvider = ({ children }) => {
     })
   }, [])
 
-  const value = {
-    detectedScriptures,
-    suggestedScriptures,
-    themes,
-    currentScripture, // Preview
-    liveScripture,    // Live
-    liveTranscript,   // Live audio transcript
-    projectionHistory, // Projection history
-    isAnalyzing,
-    isSmartAnalyzing,
-    isConnected,
-    sessionId,
-    detectScriptures,
-    getScriptureText,
-    displayScripture,
-    goLive,
-    clearLive,
-    clearHistory,
-    removeFromHistory,
-    searchSemantic,
-    clearCurrentScripture,
-    clearAll,
-    startSession,
-    endSession,
-    sendTranscript,
-    socket
-  }
-
   return (
-    <ScriptureContext.Provider value={value}>
+    <ScriptureContext.Provider value={{
+      detectedScriptures,
+      suggestedScriptures,
+      themes,
+      currentScripture,
+      setCurrentScripture,
+      previewContent,
+      setPreviewContent,
+      lexiconScripture,
+      setLexiconScripture,
+      liveScripture,
+      liveTranscript,
+      projectionHistory,
+      isAnalyzing,
+      isSmartAnalyzing,
+      isConnected,
+      sessionId,
+      detectScriptures,
+      getScriptureText,
+      displayScripture,
+      goLive,
+      clearLive,
+      clearHistory,
+      removeFromHistory,
+      searchSemantic,
+      clearCurrentScripture,
+      clearAll,
+      startSession,
+      endSession,
+      sendTranscript,
+      socket
+    }}>
       {children}
     </ScriptureContext.Provider>
   )
 }
-

@@ -103,7 +103,16 @@ class LexiconService {
 
         if (entry) {
             console.log(`[LexiconService] ✓ Local hit for: ${query}`);
-            return entry;
+
+            // Determine Source based on Strong's prefix (H = BDB, G = Thayer)
+            // This is a heuristic as the DB might not have explicit source columns
+            let source = 'Bible Lexicon';
+            if (entry.strong_number) {
+                if (entry.strong_number.startsWith('H')) source = 'Brown-Driver-Briggs (Hebrew)';
+                else if (entry.strong_number.startsWith('G')) source = 'Thayer\'s Greek Lexicon';
+            }
+
+            return { ...entry, source };
         }
 
         console.warn(`[LexiconService] ✗ No results for: ${query}`);
@@ -111,12 +120,13 @@ class LexiconService {
     }
 
     async getInterlinearVerse(reference) {
+        reference = reference.trim(); // Handle leading/trailing whitespace
         console.log(`[LexiconService] Fetching local interlinear for: ${reference}`);
 
         try {
             let bookName, chapter, verse;
-            const fullMatch = reference.match(/^(.+)\s+(\d+)[:.](\d+)$/);
-            const singleMatch = reference.match(/^(.+)\s+(\d+)$/);
+            const fullMatch = reference.match(/^(.+?)\s+(\d+)[:.,](\d+)$/);
+            const singleMatch = reference.match(/^(.+?)\s+(\d+)$/);
 
             if (fullMatch) {
                 [, bookName, chapter, verse] = fullMatch;
@@ -124,13 +134,20 @@ class LexiconService {
                 [, bookName, verse] = singleMatch;
                 chapter = 1;
             } else {
+                console.warn(`[LexiconService] Regex failed for: "${reference}"`); // Debug log
                 throw new Error('Invalid format. Use "John 3:16" or "Jude 20"');
             }
 
+            console.log(`[LexiconService] Parsed: Book="${bookName}", Ch=${chapter}, V=${verse}`); // Debug log
+
             const bookId = this.bookMap[bookName.toLowerCase()];
             if (!bookId) {
+                console.warn(`[LexiconService] Book not found in map: "${bookName.toLowerCase()}"`); // Debug log
+                console.warn(`[LexiconService] Map keys sample: ${Object.keys(this.bookMap).slice(0, 10).join(',')}`); // Debug log
                 throw new Error(`Book not found: ${bookName}`);
             }
+
+            console.log(`[LexiconService] Resolved BookID: ${bookId}`); // Debug log
 
             const row = this.db.prepare(`
                 SELECT words_json FROM interlinear_verses 
@@ -138,14 +155,21 @@ class LexiconService {
             `).get(bookId, parseInt(chapter), parseInt(verse));
 
             if (!row) {
-                console.warn(`[LexiconService] No local interlinear data for ${reference}`);
+                console.warn(`[LexiconService] No DB row for BookID=${bookId} Ch=${chapter} V=${verse}`);
                 return null;
             }
 
             const words = JSON.parse(row.words_json);
             const prefix = bookId >= 40 ? 'G' : 'H';
 
-            // Format into the expected "Word [Strong]" string for the frontend parsing
+            // Return structured data directly for the frontend
+            const structuredWords = words.map(w => ({
+                text: w.text,
+                strong: w.number ? `${prefix}${w.number.substring(1).toUpperCase()}` : null,
+                originalWord: w.word // Optional: send Hebrew/Greek too if we want to show it
+            }));
+
+            // Legacy text format (optional, keeping for now if anything else uses it)
             const taggedText = words.map(w => {
                 const strong = w.number ? ` [${prefix}${w.number.substring(1).toUpperCase()}]` : '';
                 return `${w.text}${strong}`;
@@ -153,6 +177,7 @@ class LexiconService {
 
             return {
                 reference,
+                words: structuredWords,
                 text: taggedText,
                 translation: 'KJV+Interlinear'
             };

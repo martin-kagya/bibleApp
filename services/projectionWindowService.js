@@ -13,7 +13,50 @@ let projectionWindow = null;
 const getProjectionWindow = () => {
     // Check if window exists and is not closed
     if (!projectionWindow || projectionWindow.closed) {
-        projectionWindow = window.open('', 'pneumavoice_projection', 'width=1280,height=720');
+        // Try to detect extended display and position window there
+        // Screen positioning for extended displays
+        let windowFeatures = 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no';
+        
+        // Try to position on extended display (screen.width helps detect multi-monitor setups)
+        // Move window to the right side which is typically where extended displays are
+        // Note: This is a best-effort approach as browser APIs have limited multi-monitor support
+        try {
+            // If screen width suggests multiple monitors, try positioning off primary screen
+            // Extended displays are typically to the right (positive x) or left (negative x)
+            if (screen.availWidth > screen.width || screen.availLeft !== 0 || screen.availTop !== 0) {
+                // Try to position on secondary display
+                const x = screen.availLeft + screen.availWidth - 1280 - 50; // Position near right edge
+                const y = screen.availTop + 50; // Small offset from top
+                windowFeatures += `,left=${x},top=${y}`;
+            } else {
+                // Default: position on right side, which is often the extended display
+                const x = screen.width - 1280 - 50;
+                const y = 50;
+                windowFeatures += `,left=${x},top=${y}`;
+            }
+        } catch (e) {
+            console.warn('Could not position window on extended display:', e);
+        }
+        
+        projectionWindow = window.open('', 'pneumavoice_projection', windowFeatures);
+        
+        // Ensure window is visible and focused
+        if (projectionWindow) {
+            projectionWindow.focus();
+            // Make window fullscreen on extended display if possible
+            // Note: This requires user gesture, but we can maximize
+            setTimeout(() => {
+                try {
+                    if (projectionWindow && !projectionWindow.closed) {
+                        // Try to resize to full screen on secondary display
+                        projectionWindow.resizeTo(screen.availWidth, screen.availHeight);
+                    }
+                } catch (e) {
+                    // Resize might be blocked, that's okay
+                    console.log('Could not resize window:', e);
+                }
+            }, 100);
+        }
     }
     return projectionWindow;
 };
@@ -27,6 +70,63 @@ const clearWindow = (win) => {
         win.document.open();
         win.document.close();
     }
+};
+
+/**
+ * Open the Live Display window on extended display
+ * This opens the /live route which uses Socket.IO to display live content
+ */
+export const openLiveDisplay = () => {
+    // Check if window already exists and is open
+    if (projectionWindow && !projectionWindow.closed) {
+        projectionWindow.focus();
+        return projectionWindow;
+    }
+
+    // Try to detect extended display and position window there
+    let windowFeatures = 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=no';
+    
+    try {
+        // Calculate position for extended display
+        // Extended displays are typically to the right (positive x) or left (negative x)
+        if (screen.availWidth > screen.width || screen.availLeft !== 0 || screen.availTop !== 0) {
+            // Position on secondary display
+            const x = screen.availLeft + (screen.availWidth - 1280) / 2; // Center on extended display
+            const y = screen.availTop + 50;
+            windowFeatures += `,left=${x},top=${y}`;
+        } else {
+            // Default: try right side of screen (common extended display position)
+            const x = Math.max(0, screen.width - 1280 - 50);
+            const y = 50;
+            windowFeatures += `,left=${x},top=${y}`;
+        }
+    } catch (e) {
+        console.warn('Could not calculate extended display position:', e);
+    }
+    
+    // Open the /live route which will display live content via Socket.IO
+    const liveUrl = window.location.origin + '/live';
+    projectionWindow = window.open(liveUrl, 'pneumavoice_live_display', windowFeatures);
+    
+    if (projectionWindow) {
+        projectionWindow.focus();
+        // Wait for window to load, then try to maximize or go fullscreen if on extended display
+        setTimeout(() => {
+            try {
+                if (projectionWindow && !projectionWindow.closed) {
+                    // Try to make it larger - ideally fullscreen on extended display
+                    // Note: Fullscreen requires user gesture, but we can maximize size
+                    projectionWindow.resizeTo(Math.min(screen.availWidth, 1920), Math.min(screen.availHeight, 1080));
+                    projectionWindow.focus();
+                }
+            } catch (e) {
+                // Resize might be blocked by browser, that's okay
+                console.log('Could not resize live display window:', e);
+            }
+        }, 500);
+    }
+    
+    return projectionWindow;
 };
 
 /**
@@ -205,15 +305,22 @@ export const projectAnnouncement = (item) => {
  * @param {Object} item - Prayer request with name, city, country, problem, image
  */
 export const projectPrayerRequest = (item) => {
-    // Format problem text as bullet points if it contains multiple lines or sentences
+    // Format problem text as bullet points - split by dot delimiter
     const formatProblem = (text) => {
         if (!text) return '';
-        // Split by newlines, periods, or semicolons to make bullet points
-        const lines = text.split(/[\n;]|(?<=\.)\s+/).filter(line => line.trim());
-        if (lines.length <= 1) {
-            return `<p class="problem-text">${text}</p>`;
+        // Split by dot followed by space (.) to create bullet points
+        // This handles patterns like "Topic 1. Topic 2. Topic 3"
+        const lines = text
+            .split(/\.\s+(?=[A-Za-z])|\.\s*$/) // Split by dot followed by space(s) and letter, or dot at end
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        
+        // Always display as bullets if we have any content
+        if (lines.length > 0) {
+            return `<ul class="problem-list">${lines.map(line => `<li>${line}</li>`).join('')}</ul>`;
         }
-        return `<ul class="problem-list">${lines.map(line => `<li>${line.trim()}</li>`).join('')}</ul>`;
+        // Fallback - display as paragraph
+        return `<p class="problem-text">${text}</p>`;
     };
 
     writeToProjection(`

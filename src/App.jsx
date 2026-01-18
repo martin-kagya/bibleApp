@@ -4,6 +4,7 @@ import PresentationDisplay from './components/PresentationDisplay'
 import LiveDisplay from './components/LiveDisplay'
 import { SpeechProvider } from './contexts/SpeechContext'
 import { ScriptureProvider, useScripture } from './contexts/ScriptureContext'
+import { ProjectionSettingsProvider } from './contexts/ProjectionSettingsContext'
 import DebugPanel from './components/DebugPanel'
 
 const MainLayout = () => (
@@ -51,9 +52,11 @@ const AppContent = () => {
 
 function App() {
   return (
-    <ScriptureProvider>
-      <AppContent />
-    </ScriptureProvider>
+    <ProjectionSettingsProvider>
+      <ScriptureProvider>
+        <AppContent />
+      </ScriptureProvider>
+    </ProjectionSettingsProvider>
   )
 }
 

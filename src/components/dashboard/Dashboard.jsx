@@ -7,8 +7,9 @@ import ScriptureSearchTile from './ScriptureSearchTile'
 import SpeechControls from '../SpeechControls'
 import SongsTab from './SongsTab'
 import ProjectionTab from './ProjectionTab'
-import HistoryPanel from './HistoryPanel'
-import { Moon, Sun, BookOpen, Image, Music } from 'lucide-react'
+import StudyCenter from './StudyCenter'
+import SettingsModal from '../SettingsModal'
+import { Moon, Sun, BookOpen, Image, Music, Settings } from 'lucide-react'
 
 const TABS = [
     { id: 'scripture', label: 'Scripture', icon: BookOpen },
@@ -18,6 +19,7 @@ const TABS = [
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('scripture');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const toggleTheme = () => {
         document.documentElement.classList.toggle('dark')
@@ -52,6 +54,13 @@ const Dashboard = () => {
 
                 <div className="flex items-center gap-4">
                     {activeTab === 'scripture' && <SpeechControls />}
+                    <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="p-2 hover:bg-accent rounded-full text-muted-foreground transition-colors"
+                        title="Projection Settings"
+                    >
+                        <Settings className="h-5 w-5" />
+                    </button>
                     <button onClick={toggleTheme} className="p-2 hover:bg-accent rounded-full text-muted-foreground transition-colors relative">
                         <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                         <Moon className="absolute top-2 left-2 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -95,7 +104,7 @@ const Dashboard = () => {
 
                         {/* RIGHT COLUMN: History Panel (3 cols) */}
                         <div className="col-span-12 lg:col-span-3 h-full min-h-0">
-                            <HistoryPanel />
+                            <StudyCenter />
                         </div>
                     </div>
                 )}
@@ -112,6 +121,9 @@ const Dashboard = () => {
                     </div>
                 )}
             </main>
+
+            {/* Settings Modal */}
+            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
         </div>
     )
 }

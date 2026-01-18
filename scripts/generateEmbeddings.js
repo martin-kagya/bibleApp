@@ -178,6 +178,7 @@ async function generate() {
     }
 
     console.log('\n✨ All operations complete!')
+    process.exit(0)
 
   } catch (error) {
     console.error('\n❌ Fatal Error:', error)

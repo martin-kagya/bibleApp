@@ -14,11 +14,12 @@ import {
     projectPrayerRequest
 } from '../../../services/projectionWindowService';
 import { useScripture } from '../../contexts/ScriptureContext';
+import UnifiedPreviewMonitor from './UnifiedPreviewMonitor';
 
 /**
  * PrayerRequestItem - Display prayer request with image and details
  */
-const PrayerRequestItem = ({ item, onProject, onDelete, onEdit }) => {
+const PrayerRequestItem = ({ item, onProject, onDelete, onEdit, onPreview }) => {
     return (
         <div className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md transition-all">
             <div className="aspect-[4/3] bg-muted relative overflow-hidden">
@@ -49,6 +50,15 @@ const PrayerRequestItem = ({ item, onProject, onDelete, onEdit }) => {
                     >
                         <Edit2 className="w-4 h-4" />
                     </button>
+                    {onPreview && (
+                        <button
+                            onClick={() => onPreview(item)}
+                            className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                            title="Preview"
+                        >
+                            <Type className="w-4 h-4" />
+                        </button>
+                    )}
                     <button
                         onClick={() => onProject(item)}
                         className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90"
@@ -78,16 +88,19 @@ const PrayerRequestItem = ({ item, onProject, onDelete, onEdit }) => {
 /**
  * ProjectionItem - Individual projection item display
  */
-const ProjectionItem = ({ item, onProject, onDelete, onEdit }) => {
+const ProjectionItem = ({ item, onProject, onDelete, onEdit, onPreview }) => {
     const isImage = item.type === PROJECTION_TYPES.IMAGE;
     const isPrayerRequest = item.type === PROJECTION_TYPES.PRAYER_REQUEST;
 
     if (isPrayerRequest) {
-        return <PrayerRequestItem item={item} onProject={onProject} onDelete={onDelete} onEdit={onEdit} />;
+        return <PrayerRequestItem item={item} onProject={onProject} onDelete={onDelete} onEdit={onEdit} onPreview={onPreview} />;
     }
 
     return (
-        <div className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md transition-all">
+        <div 
+            className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md transition-all cursor-pointer"
+            onDoubleClick={() => onProject(item)}
+        >
             {isImage ? (
                 <div className="aspect-video bg-muted relative overflow-hidden">
                     <img
@@ -96,6 +109,15 @@ const ProjectionItem = ({ item, onProject, onDelete, onEdit }) => {
                         className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {onPreview && (
+                            <button
+                                onClick={() => onPreview(item)}
+                                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                                title="Preview"
+                            >
+                                <Type className="w-4 h-4" />
+                            </button>
+                        )}
                         <button
                             onClick={() => onProject(item)}
                             className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90"
@@ -129,6 +151,15 @@ const ProjectionItem = ({ item, onProject, onDelete, onEdit }) => {
                             </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
+                            {onPreview && (
+                                <button
+                                    onClick={() => onPreview(item)}
+                                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Preview"
+                                >
+                                    <Type className="w-3 h-3" />
+                                </button>
+                            )}
                             <button
                                 onClick={() => onProject(item)}
                                 className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -444,7 +475,7 @@ const ProjectionTab = () => {
     const [editingPrayerRequest, setEditingPrayerRequest] = useState(null);
     const [filter, setFilter] = useState('all');
     const fileInputRef = useRef(null);
-    const { projectContent } = useScripture?.() || {};
+    const { projectContent, setPreviewContent, goLive } = useScripture?.() || {};
 
     useEffect(() => {
         loadItems();
@@ -504,8 +535,55 @@ const ProjectionTab = () => {
         }
     };
 
+    const handlePreviewItem = (item) => {
+        const previewData = {
+            type: item.type,
+            title: item.title || item.name || 'Announcement',
+            content: item.content || item.problem || '',
+            image: item.image || null,
+            ...item
+        };
+        if (setPreviewContent) {
+            setPreviewContent(previewData);
+        }
+    };
+
     const handleProjectItem = (item) => {
-        if (projectContent) {
+        // First set preview
+        const previewData = {
+            type: item.type,
+            title: item.title || item.name || 'Announcement',
+            content: item.content || item.problem || '',
+            image: item.image || null,
+            ...item
+        };
+        if (setPreviewContent) {
+            setPreviewContent(previewData);
+        }
+
+        // Then go live/project via Socket.IO (opens live display window automatically)
+        if (goLive) {
+            // Use goLive to send via Socket.IO - this will auto-open the live display window
+            // Ensure all prayer request fields are included
+            const liveData = {
+                type: item.type,
+                reference: item.title || item.name || 'Announcement',
+                title: item.title || item.name || 'Announcement',
+                text: item.content || item.problem || '',
+                content: item.content || item.problem || '',
+                translation: item.source || 'Announcement',
+                // Include all prayer request specific fields
+                name: item.name,
+                city: item.city,
+                country: item.country,
+                problem: item.problem,
+                image: item.image,
+                // Spread rest of item to ensure nothing is missed
+                ...item,
+            };
+            console.log('🎯 Sending prayer request to live:', liveData);
+            goLive(liveData);
+        } else if (projectContent) {
             projectContent({
                 type: item.type,
                 title: item.title || item.name,
@@ -513,7 +591,7 @@ const ProjectionTab = () => {
                 ...item,
             });
         } else {
-            // Use shared projection window service
+            // Fallback: Use shared projection window service
             if (item.type === PROJECTION_TYPES.PRAYER_REQUEST) {
                 projectPrayerRequest(item);
             } else if (item.type === PROJECTION_TYPES.IMAGE) {
@@ -531,7 +609,7 @@ const ProjectionTab = () => {
     return (
         <div className="h-full flex flex-col gap-4">
             {/* Header */}
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center justify-between gap-4 flex-wrap shrink-0">
                 {/* Filters */}
                 <div className="flex items-center gap-2 flex-wrap">
                     {[
@@ -588,28 +666,39 @@ const ProjectionTab = () => {
                 </div>
             </div>
 
-            {/* Items Grid */}
-            <div className="flex-1 overflow-y-auto min-h-0 pr-1">
-                {filteredItems.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredItems.map((item) => (
-                            <ProjectionItem
-                                key={item.id}
-                                item={item}
-                                onProject={handleProjectItem}
-                                onDelete={handleDeleteItem}
-                                onEdit={handleEditPrayerRequest}
-                            />
-                        ))}
+            {/* Main Content: Large Preview Monitor + Items Grid */}
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0 overflow-hidden">
+                {/* Large Preview Monitor - Takes 2/3 on large screens, full width on smaller */}
+                <div className="lg:col-span-2 flex items-center justify-center min-h-0">
+                    <div className="w-full h-full max-h-full flex items-center justify-center">
+                        <UnifiedPreviewMonitor className="w-full max-w-full h-full max-h-full scale-100" />
                     </div>
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-center p-8 text-muted-foreground">
-                        <Image className="w-12 h-12 mb-3 opacity-50" />
-                        <p className="text-sm">
-                            No projection items yet. Add images, announcements, or prayer requests!
-                        </p>
-                    </div>
-                )}
+                </div>
+
+                {/* Items Grid - Takes 1/3 on large screens */}
+                <div className="lg:col-span-1 overflow-y-auto min-h-0 pr-1">
+                    {filteredItems.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-4">
+                            {filteredItems.map((item) => (
+                                <ProjectionItem
+                                    key={item.id}
+                                    item={item}
+                                    onProject={handleProjectItem}
+                                    onPreview={handlePreviewItem}
+                                    onDelete={handleDeleteItem}
+                                    onEdit={handleEditPrayerRequest}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-center p-8 text-muted-foreground">
+                            <Image className="w-12 h-12 mb-3 opacity-50" />
+                            <p className="text-sm">
+                                No projection items yet. Add images, announcements, or prayer requests!
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Modals */}

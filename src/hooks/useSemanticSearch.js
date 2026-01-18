@@ -22,7 +22,13 @@ export const useSemanticSearch = () => {
         setError(null);
 
         try {
-            const searchResults = await searchSemantic(query, topK, priority);
+            // Manual search: Enable fusion but use OR logic to handle misquotes (Partial Match Support)
+            const searchResults = await searchSemantic(query, topK, priority, {
+                enableKeywordFusion: true,
+                keywordOperator: 'OR',
+                useHotfixes: true,
+                isFinal: true // Enable full reranking for manual searches
+            });
             setResults(searchResults || []);
         } catch (err) {
             console.error('Semantic search error:', err);

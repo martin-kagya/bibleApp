@@ -12,7 +12,7 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
     const selectedRef = useRef(null);
     const containerRef = useRef(null);
     const lastEnterTime = useRef(0);
-    const { goLive } = useScripture();
+    const { goLive, setPreviewContent } = useScripture();
 
     useEffect(() => {
         const fetchChapter = async () => {
@@ -86,6 +86,28 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
         }
     }, [selectedIndex]);
 
+    const handlePreview = useCallback((verse) => {
+        const scriptureData = {
+            reference: `${book} ${chapter}:${verse.verse}`,
+            text: verse.text,
+            book: book,
+            chapter: chapter,
+            verse: verse.verse,
+            translation: translation
+        };
+        const previewData = {
+            type: 'scripture',
+            reference: scriptureData.reference,
+            title: scriptureData.reference,
+            content: verse.text,
+            text: verse.text,
+            translation: translation
+        };
+        if (setPreviewContent) {
+            setPreviewContent(previewData);
+        }
+    }, [book, chapter, translation, setPreviewContent]);
+
     const handleGoLive = useCallback((verse) => {
         const scriptureData = {
             reference: `${book} ${chapter}:${verse.verse}`,
@@ -95,8 +117,20 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
             verse: verse.verse,
             translation: translation
         };
+        // Also set preview when going live
+        const previewData = {
+            type: 'scripture',
+            reference: scriptureData.reference,
+            title: scriptureData.reference,
+            content: verse.text,
+            text: verse.text,
+            translation: translation
+        };
+        if (setPreviewContent) {
+            setPreviewContent(previewData);
+        }
         goLive(scriptureData);
-    }, [book, chapter, translation, goLive]);
+    }, [book, chapter, translation, goLive, setPreviewContent]);
 
     // Keyboard event handler
     const handleKeyDown = useCallback((e) => {
@@ -127,9 +161,13 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
                 if (timeSinceLastEnter < 400 && selectedIndex >= 0) {
                     // Double Enter - Go Live!
                     handleGoLive(verses[selectedIndex]);
+                } else if (selectedIndex >= 0) {
+                    // Single Enter with selection - Preview
+                    handlePreview(verses[selectedIndex]);
                 } else if (selectedIndex < 0 && verses.length > 0) {
-                    // First Enter with no selection - select first verse
+                    // First Enter with no selection - select and preview first verse
                     setSelectedIndex(0);
+                    handlePreview(verses[0]);
                 }
                 lastEnterTime.current = now;
                 break;
@@ -147,7 +185,7 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
             default:
                 break;
         }
-    }, [verses, selectedIndex, handleGoLive]);
+    }, [verses, selectedIndex, handleGoLive, handlePreview]);
 
     // Focus container on mount for keyboard events
     useEffect(() => {
@@ -215,7 +253,10 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
                         <div
                             key={verse.verse}
                             ref={isHighlighted ? highlightRef : (isSelected ? selectedRef : null)}
-                            onClick={() => setSelectedIndex(index)}
+                            onClick={() => {
+                                setSelectedIndex(index);
+                                handlePreview(verse);
+                            }}
                             onDoubleClick={() => handleGoLive(verse)}
                             className={`group rounded-lg border p-3 text-sm transition-all flex gap-3 cursor-pointer ${isSelected
                                 ? 'bg-primary/20 border-primary/40 shadow-md ring-2 ring-primary/30'

@@ -71,7 +71,8 @@ class VectorDbService {
       'divine': 'vine', 'husband': 'husbandman', 'branch': 'branches', 'joint': 'john', 'sam': 'psalms', 'songs': 'psalms',
       'revelations': 'revelation', 'rubabell': 'zerubbabel', 'leibon': 'laban', 'leibn': 'laban', 'lee-man': 'laban', 'stunance': 'stones',
       'boozra': 'bozrah', 'bozra': 'bozrah', 'eddy': 'edifice', 'face': 'edifice', // eddy face -> edifice
-      'release': 'lively' // life release -> lively
+      'release': 'lively', // life release -> lively
+      'encompassed': 'compassed', 'encompass': 'compass' // KJV mapping
     }
     const stopWords = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'they', 'shall', 'will', 'have', 'been', 'were', 'not', 'but', 'all', 'one', 'two', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'are', 'was', 'were', 'has', 'had', 'am', 'does', 'did', 'done', 'should', 'might', 'must', 'may', 'verse', 'chapter', 'book', 'bible', 'scripture'])
 
@@ -93,7 +94,11 @@ class VectorDbService {
           const lowerName = name.toLowerCase();
           if (word === lowerName) break;
           const distance = this.levenshtein(word, lowerName);
-          if (distance <= Math.max(2, Math.floor(lowerName.length * 0.3))) {
+          // Stricter threshold: Only 1 edit allowed for words < 6 chars, 2 for longer.
+          // This prevents "hope" (4) -> "house" (5) which is dist 2.
+          const allowedEdits = lowerName.length < 6 ? 1 : Math.max(2, Math.floor(lowerName.length * 0.3));
+
+          if (distance <= allowedEdits) {
             console.log(`✨ Fast Fuzzy: "${word}" ➔ "${lowerName}" (dist: ${distance})`);
             distinctWords.add(lowerName);
             foundFuzzy = true;
@@ -245,41 +250,55 @@ class VectorDbService {
 
   async searchHybrid(query, options = {}) {
     if (!this.isReady) await this.init()
-    const { topK = 10, alpha = 0.5, priority = 'BOTH', useHotfixes = false, useReranker = true, isFinal = false } = options
-    console.log(`🕵️‍♂️ Hybrid Search: "${query.substring(0, 50)}..." [Hotfixes: ${useHotfixes}, Reranker: ${useReranker}]`)
+    const { topK = 10, alpha = 0.5, priority = 'BOTH', useHotfixes = false, useReranker = true, enableKeywordFusion = true, keywordOperator = 'OR' } = options
+    const isFinalMode = options.isFinal || false;
+    console.log(`🕵️‍♂️ Hybrid Search: "${query.substring(0, 50)}..." [Keywords: ${enableKeywordFusion}, Op: ${keywordOperator}, Hotfixes: ${useHotfixes}, Reranker: ${useReranker}]`)
 
-    // 1. Keyword Extraction
-    const lyricsKeywords = this.extractKeywords(query, useHotfixes)
-    console.log(`   📝 Keywords: [${lyricsKeywords.join(' ')}]`)
+    let candidates = [];
 
-    // 2. Parallel Retrieval
-    const vectorResults = await this.searchSimilarVerses(query, topK * 5, priority)
-    const keywordResults = await localBibleService.searchByKeyword(lyricsKeywords.join(' '), topK * 5)
+    // 1. Keyword Extraction (Conditional)
+    if (enableKeywordFusion) {
+      const lyricsKeywords = this.extractKeywords(query, useHotfixes)
+      console.log(`   📝 Keywords: [${lyricsKeywords.join(' ')}]`)
 
-    // 3. Score Fusion (RRF)
-    const fusionMap = new Map()
-    const RRF_K = 60
+      // 2. Parallel Retrieval
+      const vectorResults = await this.searchSimilarVerses(query, topK * 5, priority)
+      const keywordResults = await localBibleService.searchByKeyword(lyricsKeywords.join(' '), topK * 5, keywordOperator)
 
-    vectorResults.forEach((item, rank) => {
-      const key = item.reference
-      if (!fusionMap.has(key)) { fusionMap.set(key, { score: 0, item }) }
-      fusionMap.get(key).score += alpha * (1 / (RRF_K + rank + 1))
-    })
+      // 3. Score Fusion (RRF)
+      const fusionMap = new Map()
+      const RRF_K = 60
 
-    keywordResults.forEach((item, rank) => {
-      const key = item.reference
-      if (!fusionMap.has(key)) { fusionMap.set(key, { score: 0, item }) }
-      fusionMap.get(key).score += (1 - alpha) * (1 / (RRF_K + rank + 1))
-    })
+      vectorResults.forEach((item, rank) => {
+        const key = item.reference
+        if (!fusionMap.has(key)) { fusionMap.set(key, { score: 0, item }) }
+        fusionMap.get(key).score += alpha * (1 / (RRF_K + rank + 1))
+      })
 
-    // Sort fused candidates
-    let candidates = Array.from(fusionMap.values())
-      .map(entry => ({ ...entry.item, confidence: entry.score }))
-      .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, Math.max(topK * 2, 20)) // Get enough candidates for reranking
+      keywordResults.forEach((item, rank) => {
+        const key = item.reference
+        if (!fusionMap.has(key)) { fusionMap.set(key, { score: 0, item }) }
+        fusionMap.get(key).score += (1 - alpha) * (1 / (RRF_K + rank + 1))
+      })
+
+      // Sort fused candidates
+      candidates = Array.from(fusionMap.values())
+        .map(entry => ({ ...entry.item, confidence: entry.score }))
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, Math.max(topK * 2, 20)) // Get enough candidates for reranking
+
+      if (candidates.length > 0) {
+        console.log(`   ↳ Vectors: ${vectorResults.length} | Keywords: ${keywordResults.length}`);
+      }
+    } else {
+      // Pure Vector Mode
+      console.log(`   🚀 Pure Vector Search (Fusion Disabled)`);
+      const vectorResults = await this.searchSimilarVerses(query, topK * 5, priority);
+      candidates = vectorResults.slice(0, Math.max(topK * 2, 20));
+    }
 
     // 4. Verification & Reranking Stage
-    const shouldRerank = useReranker && candidates.length > 0 && isFinal;
+    const shouldRerank = useReranker && candidates.length > 0 && isFinalMode;
 
     if (shouldRerank) {
       try {
@@ -287,9 +306,10 @@ class VectorDbService {
         const reranked = await rerankerService.rerank(query, candidates, topK)
 
         // CRITICAL: Map rerankerScore back to confidence so filters catch it
+        // Boost confidence significantly for UX (Hyper-aggressive curve: 0.001 -> 0.35, 0.01 -> 0.5, 0.1 -> 0.7)
         candidates = reranked.map(c => ({
           ...c,
-          confidence: c.rerankerScore,
+          confidence: c.rerankerScore > 0.001 ? Math.min(0.99, Math.pow(c.rerankerScore, 0.15)) : c.rerankerScore,
           similarity: c.rerankerScore
         }))
       } catch (e) {
@@ -297,13 +317,13 @@ class VectorDbService {
         // Fallback to top fused results if reranking fails
         candidates = candidates.slice(0, topK)
       }
-    } else if (!isFinal && candidates.length > 0) {
+    } else if (!isFinalMode && candidates.length > 0) {
       // For partial results, just take top fused candidates without the expensive rerank
       // console.log('   ⏭ Skipping reranker for partial result');
       candidates = candidates.slice(0, topK).map((c, i) => {
         // Still give the top one a slight confidence boost if it's okayish
         if (i === 0 && c.confidence > 0.01) {
-          return { ...c, confidence: Math.max(c.confidence, 0.4) }
+          return { ...c, confidence: Math.max(c.confidence, 0.85) }
         }
         return c;
       });
@@ -311,14 +331,14 @@ class VectorDbService {
       // If no reranker, boost top result confidence to ensure it passes threshold if it's a good match
       candidates = candidates.slice(0, topK).map((c, i) => {
         if (i === 0 && c.confidence > 0.01) {
-          return { ...c, confidence: Math.max(c.confidence, 0.45) } // Boost top hit if it exists
+          return { ...c, confidence: Math.max(c.confidence, 0.9) } // Boost top hit significantly if it exists
         }
         return c
       })
     }
 
-    if (candidates.length > 0) {
-      console.log(`   ↳ Vectors: ${vectorResults.length} | Keywords: ${keywordResults.length}`);
+    if (candidates.length > 0 && enableKeywordFusion) {
+      // console.log(`   ↳ Vectors: ${vectorResults.length} | Keywords: ${keywordResults.length}`); // Moved up
       console.log(`   ✨ Top Suggestions: ${candidates.slice(0, 3).map(m => m.reference).join(', ')}`)
     } else {
       console.log('   ⚠️ No scripture suggestions found')

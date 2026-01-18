@@ -37,6 +37,7 @@ app.use('/api/', limiter);
 const { enhancedAiService } = require('./services/aiService.enhanced');
 const { parallelSearchService } = require('./services/parallelSearchService');
 const { FasterWhisperService } = require('./services/fasterWhisperService');
+const { lexiconService } = require('./services/lexiconService');
 
 // Track global live state
 let currentLiveScripture = null;
@@ -323,10 +324,10 @@ app.post('/api/ai/analyze', async (req, res) => {
 });
 
 app.post('/api/ai/search-semantic', async (req, res) => {
-  try {
-    const { query, topK, sessionId, priority, useTwoStage, embeddingModel, rerankerModel } = req.body;
-    if (!query) return res.status(400).json({ error: 'Query required' });
+  const { query, topK, sessionId, priority, useTwoStage, embeddingModel, rerankerModel, enableKeywordFusion, keywordOperator, useHotfixes, isFinal } = req.body;
+  if (!query) return res.status(400).json({ error: 'Query required' });
 
+  try {
     const { semanticSearchService } = require('./services/semanticSearchService');
 
     const results = await semanticSearchService.searchByMeaning(query, {
@@ -336,12 +337,49 @@ app.post('/api/ai/search-semantic', async (req, res) => {
       algorithm: useTwoStage !== false ? 'hybrid' : 'standard',
       modelId: embeddingModel || 'bge-large',
       rerankerModel: rerankerModel || 'bge-reranker-base',
-      useTwoStage: useTwoStage !== false
+      useTwoStage: useTwoStage !== false,
+      enableKeywordFusion: enableKeywordFusion, // Pass the flag from request
+      keywordOperator: keywordOperator, // Pass operator from request
+      useHotfixes: useHotfixes || false,     // Pass hotfixes flag
+      isFinal: isFinal // Pass the final flag to enable reranking
     });
 
     res.json(results);
   } catch (error) {
     console.error('Semantic search error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Lexicon / Dictionary Endpoints
+app.get('/api/lexicon/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'Query required' });
+    const result = await lexiconService.search(q);
+    if (!result) return res.status(404).json({ error: 'Term not found' });
+    res.json(result);
+  } catch (error) {
+    console.error('Lexicon search error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/lexicon/interlinear/:ref', async (req, res) => {
+  try {
+    const { ref } = req.params;
+    console.log(`[API] Interlinear Request for: "${ref}"`); // Debug log
+    const decoded = decodeURIComponent(ref);
+    console.log(`[API] Decoded ref: "${decoded}"`); // Debug log
+
+    const result = await lexiconService.getInterlinearVerse(decoded);
+    if (!result) {
+      console.warn(`[API] Result null for: "${decoded}"`);
+      return res.status(404).json({ error: 'Verse not found' });
+    }
+    res.json(result);
+  } catch (error) {
+    console.error('Interlinear error:', error);
     res.status(500).json({ error: error.message });
   }
 });

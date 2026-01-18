@@ -15,7 +15,8 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
 
     const semanticSearch = useSemanticSearch();
     const referenceSearch = useReferenceSearch();
-    const { goLive } = useScripture();
+    const { goLive, setPreviewContent } = useScripture();
+    const [previewedResult, setPreviewedResult] = useState(null);
 
     // Fetch translations from API
     useEffect(() => {
@@ -57,6 +58,9 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
             await semanticSearch.search(query, { priority, topK: 10 });
             referenceSearch.clear();
         }
+        // Clear preview when searching
+        setPreviewedResult(null);
+        if (setPreviewContent) setPreviewContent(null);
     };
 
     const handleKeyPress = (e) => {
@@ -69,10 +73,32 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
         setQuery('');
         semanticSearch.clear();
         referenceSearch.clear();
+        setPreviewedResult(null);
+        if (setPreviewContent) setPreviewContent(null);
     };
 
-    const handleSemanticResultClick = (result) => {
-        goLive(result);
+    const handleSemanticResultClick = (result, isDoubleClick = false) => {
+        // Single click: Set preview
+        // Double click: Go live
+        const previewData = {
+            type: 'scripture',
+            reference: result.reference,
+            title: result.reference,
+            content: result.text,
+            text: result.text,
+            translation: result.translation || 'KJV'
+        };
+
+        if (isDoubleClick || (previewedResult && previewedResult.reference === result.reference)) {
+            // Go live
+            goLive(result);
+            setPreviewedResult(result);
+            if (setPreviewContent) setPreviewContent(previewData);
+        } else {
+            // Set preview
+            setPreviewedResult(result);
+            if (setPreviewContent) setPreviewContent(previewData);
+        }
     };
 
     const isLoading = semanticSearch.loading || referenceSearch.loading;
@@ -178,33 +204,48 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
                         {/* Semantic Results */}
                         {semanticSearch.results.length > 0 && (
                             <div className="grid gap-2">
-                                {semanticSearch.results.map((result, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="group bg-card hover:bg-muted/50 rounded-lg border border-border p-3 transition-all flex gap-3 text-sm relative"
-                                    >
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-bold text-foreground">
-                                                    {result.reference}
-                                                </span>
-                                                <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full font-mono">
-                                                    {Math.round((result.rerankerScore || result.confidence || result.similarity || 0) * 100)}%
-                                                </span>
-                                            </div>
-                                            <p className="text-muted-foreground line-clamp-2">
-                                                {result.text}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={() => handleSemanticResultClick(result)}
-                                            className="self-center p-2 bg-primary text-primary-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                            title="Go Live"
+                                {semanticSearch.results.map((result, idx) => {
+                                    const isPreviewed = previewedResult && previewedResult.reference === result.reference;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            onClick={() => handleSemanticResultClick(result, false)}
+                                            onDoubleClick={() => handleSemanticResultClick(result, true)}
+                                            className={`group bg-card hover:bg-muted/50 rounded-lg border border-border p-3 transition-all flex gap-3 text-sm relative cursor-pointer ${
+                                                isPreviewed ? 'border-blue-500 bg-blue-50/10 dark:bg-blue-900/10' : ''
+                                            }`}
                                         >
-                                            <Play className="w-3 h-3" fill="currentColor" />
-                                        </button>
-                                    </div>
-                                ))}
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-bold text-foreground">
+                                                        {result.reference}
+                                                    </span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full font-mono">
+                                                        {Math.round((result.rerankerScore || result.confidence || result.similarity || 0) * 100)}%
+                                                    </span>
+                                                    {isPreviewed && (
+                                                        <span className="text-[10px] px-1.5 py-0.5 bg-blue-500 text-white rounded-full font-bold">
+                                                            Preview
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-muted-foreground line-clamp-2">
+                                                    {result.text}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSemanticResultClick(result, true);
+                                                }}
+                                                className="self-center p-2 bg-primary text-primary-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                title="Go Live (double-click row to preview first)"
+                                            >
+                                                <Play className="w-3 h-3" fill="currentColor" />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

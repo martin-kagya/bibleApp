@@ -131,8 +131,18 @@ ipcMain.handle('get-desktop-sources', async () => {
   }))
 })
 
+let projectorWindow = null;
+
 // Handle Projector Window
 ipcMain.on('open-projector', () => {
+  // If window exists, just return (no need to steal focus)
+  if (projectorWindow && !projectorWindow.isDestroyed()) {
+    if (projectorWindow.isMinimized()) projectorWindow.restore();
+    // Do NOT focus. The content updates via socket. 
+    // If we focus, it disrupts the user's typing/control on the main dashboard.
+    return;
+  }
+
   const { screen } = require('electron')
   const displays = screen.getAllDisplays()
   const primaryDisplay = screen.getPrimaryDisplay()
@@ -143,7 +153,7 @@ ipcMain.on('open-projector', () => {
     return display.bounds.x !== 0 || display.bounds.y !== 0
   }) || primaryDisplay
 
-  const projectorWindow = new BrowserWindow({
+  projectorWindow = new BrowserWindow({
     x: externalDisplay.bounds.x + 50,
     y: externalDisplay.bounds.y + 50,
     width: 1280,
@@ -158,7 +168,8 @@ ipcMain.on('open-projector', () => {
     backgroundColor: '#000000',
     title: 'Live Projector',
     autoHideMenuBar: true,
-    show: false
+    show: false,
+    focusable: true // Needs to be focusable to receive full screen events, but we won't focus it manually
   })
 
   const startURL = IS_DEV
@@ -172,7 +183,8 @@ ipcMain.on('open-projector', () => {
     if (externalDisplay !== primaryDisplay) {
       projectorWindow.setFullScreen(true)
     }
-    projectorWindow.show()
+    // usage of showInactive is key here to not steal focus from main window
+    projectorWindow.showInactive();
   })
 
   // Open external links in browser
@@ -180,6 +192,11 @@ ipcMain.on('open-projector', () => {
     require('electron').shell.openExternal(url)
     return { action: 'deny' }
   })
+
+  // Reset variable when closed
+  projectorWindow.on('closed', () => {
+    projectorWindow = null;
+  });
 })
 
 // IPC handlers
