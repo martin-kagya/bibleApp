@@ -163,7 +163,7 @@ const ScriptureGrid = () => {
                         key={`${s.reference}-${idx}`}
                         ref={el => itemRefs.current[idx] = el}
                         onClick={() => setSelectedIndex(idx)} // Allow click to select too
-                        className={`group ${bgClass} text-card-foreground border rounded-lg shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row overflow-hidden min-h-[100px] cursor-pointer ${borderClass} ${ringClass}`}
+                        className={`group ${bgClass} text-card-foreground border rounded-lg shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row overflow-hidden min-h-[100px] cursor-pointer ${borderClass} ${ringClass} ${s.isStale ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}`}
                     >
                         <div className={`p-4 flex-1 flex flex-col justify-center border-l-4 ${isLive ? 'border-l-red-500' : isPreview ? 'border-l-blue-500' : 'border-l-primary'}`}>
                             <div className="flex justify-between items-center mb-1">

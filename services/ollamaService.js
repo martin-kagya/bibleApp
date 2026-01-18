@@ -28,7 +28,12 @@ class OllamaService {
                 this.lastCheck = Date.now();
                 return this.isAvailable;
             }
-        } catch (e) { this.isAvailable = false; }
+        } catch (e) {
+            if (this.isAvailable !== false) {
+                console.warn('⚠️ Ollama service not reachable at', this.baseUrl);
+            }
+            this.isAvailable = false;
+        }
         return false;
     }
 

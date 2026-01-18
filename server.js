@@ -72,6 +72,7 @@ io.on('connection', (socket) => {
   const onTranscript = (data) => {
     const text = (data.text || '').trim();
     if (!text) return;
+    console.log(`📡 Transcript Event: "${text.substring(0, 30)}..." (Final: ${data.isFinal})`);
 
     // Only skip if it's the SAME text AND same finality status
     if (text === sessionState.lastProcessedText && !data.isFinal) return;

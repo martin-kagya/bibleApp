@@ -1,6 +1,7 @@
 const { vectorDbService } = require('./vectorDbService');
 const { ollamaService } = require('./ollamaService');
 const { localBibleService } = require('./localBibleService');
+const { suggestionPersistenceService } = require('./suggestionPersistenceService');
 const { phoneticService } = require('./phoneticService');
 
 class ParallelSearchService {
@@ -9,6 +10,17 @@ class ParallelSearchService {
     }
 
     async search(query, onResult, options = {}) {
+        console.log(`🔍 ParallelSearch Start: "${query.substring(0, 30)}..." (Final: ${options.isFinal})`);
+        // Wrapper for onResult to apply persistence
+        const persistentOnResult = (type, data) => {
+            if ((type === 'fast' || type === 'smart') && data.results) {
+                const adjusted = suggestionPersistenceService.applyPersistence(data.results, query);
+                console.log(`📡 Sending [${type}] to UI: ${adjusted.length} items (orig: ${data.results.length})`);
+                onResult(type, { ...data, results: adjusted });
+            } else {
+                onResult(type, data);
+            }
+        };
         const {
             topK = 3,
             isFinal = false
@@ -45,7 +57,7 @@ class ParallelSearchService {
                     console.log(`🎯 Phonetic Catch (Context: ${contextQuery !== query}): ${phoneticCatch.book} ${phoneticCatch.chapter}:${phoneticCatch.verse} (conf: ${phoneticCatch.confidence})`);
                     const verse = await localBibleService.getVerse(`${phoneticCatch.book} ${phoneticCatch.chapter}:${phoneticCatch.verse}`);
                     if (verse && !verse.error) {
-                        onResult('fast', { results: [{ ...verse, similarity: 1.0, confidence: 1.0 }], source: 'phonetic' });
+                        persistentOnResult('fast', { results: [{ ...verse, similarity: 1.0, confidence: 1.0 }], source: 'phonetic' });
                         bestFastScore = 1.0;
                         if (isFinal) return;
                     }
@@ -75,52 +87,55 @@ class ParallelSearchService {
                     qualityResults = [fastResults[0]];
                 }
 
-                if (qualityResults.length > 0) {
-                    bestFastScore = Math.max(bestFastScore, qualityResults[0].confidence || qualityResults[0].similarity || 0);
-                    onResult('fast', { results: qualityResults, source: 'hybrid' });
-                }
+                bestFastScore = Math.max(bestFastScore, (qualityResults.length > 0) ? (qualityResults[0].confidence || qualityResults[0].similarity || 0) : 0);
+                persistentOnResult('fast', { results: qualityResults, source: 'hybrid' });
             }
         } catch (error) { console.error('Fast lane failed:', error); }
 
         // 3. SMART LANE: AI Recovery
         const needsSmartLane = (bestFastScore < 0.6 && isFinal) || (query.split(' ').length > 12 && bestFastScore < 0.85);
-        if (needsSmartLane && await ollamaService.checkAvailability()) {
-            onResult('status', { state: 'analyzing', message: 'consulting_llm' });
-            try {
-                let candidates = [...fastResults];
-                const aiQuery = this.transcriptHistory.slice(-2).join(" "); // Give LLM more context
+        if (needsSmartLane) {
+            console.log(`🧠 Smart Lane triggered (score: ${bestFastScore.toFixed(2)}, len: ${query.split(' ').length})`);
+            if (await ollamaService.checkAvailability()) {
+                persistentOnResult('status', { state: 'analyzing', message: 'consulting_llm' });
+                try {
+                    let candidates = [...fastResults];
+                    const aiQuery = this.transcriptHistory.slice(-2).join(" "); // Give LLM more context
 
-                if (bestFastScore < 0.5) {
-                    const noiseControlKeywords = await ollamaService.denoiseTranscript(aiQuery);
-                    if (noiseControlKeywords.length > 0) {
-                        const deepResults = await vectorDbService.searchHybrid(noiseControlKeywords.join(' '), { topK: 5, useHotfixes: true, isFinal });
-                        deepResults.forEach(dr => { if (!candidates.find(c => c.reference === dr.reference)) candidates.push(dr); });
+                    if (bestFastScore < 0.5) {
+                        const noiseControlKeywords = await ollamaService.denoiseTranscript(aiQuery);
+                        if (noiseControlKeywords.length > 0) {
+                            const deepResults = await vectorDbService.searchHybrid(noiseControlKeywords.join(' '), { topK: 5, useHotfixes: true, isFinal });
+                            deepResults.forEach(dr => { if (!candidates.find(c => c.reference === dr.reference)) candidates.push(dr); });
+                        }
                     }
-                }
 
-                if (candidates.length === 0 || candidates.every(c => c.confidence < 0.3)) {
-                    const intent = await ollamaService.extractBiblicalIntent(aiQuery);
-                    if (intent) {
-                        const intentResults = await vectorDbService.searchHybrid(intent, { topK: 5, useHotfixes: true, isFinal });
-                        intentResults.forEach(ir => {
-                            if (!candidates.find(c => c.reference === ir.reference)) {
-                                candidates.push({ ...ir, source: 'intent_rescue' });
-                            }
-                        });
+                    if (candidates.length === 0 || candidates.every(c => c.confidence < 0.3)) {
+                        const intent = await ollamaService.extractBiblicalIntent(aiQuery);
+                        if (intent) {
+                            const intentResults = await vectorDbService.searchHybrid(intent, { topK: 5, useHotfixes: true, isFinal });
+                            intentResults.forEach(ir => {
+                                if (!candidates.find(c => c.reference === ir.reference)) {
+                                    candidates.push({ ...ir, source: 'intent_rescue' });
+                                }
+                            });
+                        }
                     }
-                }
 
-                if (candidates.length > 0) {
-                    const verifiedMatch = await ollamaService.verifyCandidates(aiQuery, candidates.slice(0, 10));
-                    if (verifiedMatch) {
-                        onResult('smart', { results: [verifiedMatch], source: verifiedMatch.source || 'llm', reasoning: verifiedMatch.reasoning });
-                    } else {
-                        onResult('status', { state: 'idle' });
+                    if (candidates.length > 0) {
+                        const verifiedMatch = await ollamaService.verifyCandidates(aiQuery, candidates.slice(0, 10));
+                        if (verifiedMatch) {
+                            console.log(`✨ Smart Lane found match: ${verifiedMatch.reference} (${verifiedMatch.confidence.toFixed(2)})`);
+                            persistentOnResult('smart', { results: [verifiedMatch], source: verifiedMatch.source || 'llm', reasoning: verifiedMatch.reasoning });
+                        } else {
+                            console.log('🔈 Smart Lane: No high-confidence match from LLM');
+                            persistentOnResult('status', { state: 'idle' });
+                        }
                     }
+                } catch (error) {
+                    console.error('Smart lane failed:', error);
+                    persistentOnResult('status', { state: 'idle' });
                 }
-            } catch (error) {
-                console.error('Smart lane failed:', error);
-                onResult('status', { state: 'idle' });
             }
         }
     }
