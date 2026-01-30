@@ -2,7 +2,7 @@ const { vectorDbService } = require('./vectorDbService')
 const { themeExtractionService } = require('./themeExtractionService')
 
 const MAX_SUGGESTIONS = 10
-const CONFIDENCE_THRESHOLD = 0.01 // Show virtually everything that matches vector/keyword search
+const CONFIDENCE_THRESHOLD = 0.80 // Stricter threshold to reduce noise
 
 /**
  * Semantic Search Service

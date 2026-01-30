@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Sparkles, BookOpen, Play, Loader2, X } from 'lucide-react';
+import { Search, Sparkles, BookOpen, Play, Loader2, X, Plus } from 'lucide-react';
 import { detectSearchType, parseReference } from '../utils/searchDetector';
 import { useSemanticSearch } from '../hooks/useSemanticSearch';
 import { useReferenceSearch } from '../hooks/useReferenceSearch';
@@ -15,7 +15,7 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
 
     const semanticSearch = useSemanticSearch();
     const referenceSearch = useReferenceSearch();
-    const { goLive, setPreviewContent } = useScripture();
+    const { goLive, setPreviewContent, addToSchedule } = useScripture();
     const [previewedResult, setPreviewedResult] = useState(null);
 
     // Fetch translations from API
@@ -211,9 +211,8 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
                                             key={idx}
                                             onClick={() => handleSemanticResultClick(result, false)}
                                             onDoubleClick={() => handleSemanticResultClick(result, true)}
-                                            className={`group bg-card hover:bg-muted/50 rounded-lg border border-border p-3 transition-all flex gap-3 text-sm relative cursor-pointer ${
-                                                isPreviewed ? 'border-blue-500 bg-blue-50/10 dark:bg-blue-900/10' : ''
-                                            }`}
+                                            className={`group bg-card hover:bg-muted/50 rounded-lg border border-border p-3 transition-all flex gap-3 text-sm relative cursor-pointer ${isPreviewed ? 'border-blue-500 bg-blue-50/10 dark:bg-blue-900/10' : ''
+                                                }`}
                                         >
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
@@ -233,16 +232,28 @@ const UnifiedSearch = ({ translation = 'KJV' }) => {
                                                     {result.text}
                                                 </p>
                                             </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleSemanticResultClick(result, true);
-                                                }}
-                                                className="self-center p-2 bg-primary text-primary-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                title="Go Live (double-click row to preview first)"
-                                            >
-                                                <Play className="w-3 h-3" fill="currentColor" />
-                                            </button>
+                                            <div className="flex flex-col gap-1 self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleSemanticResultClick(result, true);
+                                                    }}
+                                                    className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 shadow-sm"
+                                                    title="Go Live"
+                                                >
+                                                    <Play className="w-3 h-3" fill="currentColor" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        addToSchedule({ ...result, type: 'scripture' });
+                                                    }}
+                                                    className="p-2 bg-muted text-muted-foreground rounded-full hover:bg-accent hover:text-accent-foreground"
+                                                    title="Add to Schedule"
+                                                >
+                                                    <Plus className="w-3 h-3" />
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}

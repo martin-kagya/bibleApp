@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Music, Play, Trash2, Edit2, X, Upload, Home, Monitor, Save } from 'lucide-react';
+import { Search, Music, Play, Eye, Plus, Edit2, Trash2, X, PlusCircle, Save } from 'lucide-react';
 import { getAllSongs, addSong, deleteSong, searchSongs, updateSong, bulkAddSongs } from '../../../services/songsService';
 import { projectSong } from '../../../services/projectionWindowService';
 import { useScripture } from '../../contexts/ScriptureContext';
@@ -77,7 +77,13 @@ const SongsTab = () => {
     const [ratios, setRatios] = useState([20, 25, 30, 25]);
 
     // Context
-    const { projectContent, currentProjection, setPreviewContent, goLive } = useScripture?.() || {};
+    const {
+        goLive,
+        setPreviewContent,
+        projectContent,
+        addToSchedule,
+        liveScripture
+    } = useScripture();
 
     // Initial Load
     useEffect(() => {
@@ -348,8 +354,11 @@ const SongsTab = () => {
         }
     }
     // 2. Fallback to global projection if nothing selected locally (e.g. initial load)
-    else if (currentProjection) {
-        monitorContent = currentProjection;
+    else if (liveScripture) {
+        monitorContent = {
+            title: liveScripture.reference || liveScripture.title,
+            content: liveScripture.text || liveScripture.content
+        };
         monitorStatus = 'LIVE';
     }
 
@@ -474,6 +483,23 @@ const SongsTab = () => {
                                         <div className={`absolute top-2 left-3 text-[9px] font-bold uppercase tracking-wider ${isLive ? 'text-red-500' : isPreview ? 'text-blue-500' : 'text-muted-foreground/50'}`}>
                                             {idx + 1}
                                         </div>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                addToSchedule({
+                                                    type: 'song',
+                                                    title: `${selectedSong.title} (${idx + 1})`,
+                                                    text: stanza,
+                                                    content: stanza,
+                                                    id: `${selectedSong.id}-${idx}`, // Unique ID for schedule
+                                                });
+                                            }}
+                                            className="absolute top-2 right-2 p-1.5 bg-muted text-muted-foreground rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent"
+                                            title="Add to Schedule"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                        </button>
 
                                         {/* Live Beacon */}
                                         {isLive && (

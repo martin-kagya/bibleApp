@@ -78,7 +78,7 @@ class VectorDbService {
       'samyraim': 'samaria', 'athamus': 'uttermost', 'samanpika': 'simon peter',
       'asaptor': 'acts chapter', 'cockpew': 'cock crow', 'baddisha': 'but ye shall'
     }
-    const stopWords = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'they', 'shall', 'will', 'have', 'been', 'were', 'not', 'but', 'all', 'one', 'two', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'are', 'was', 'were', 'has', 'had', 'am', 'does', 'did', 'done', 'should', 'might', 'must', 'may', 'verse', 'chapter', 'book', 'bible', 'scripture'])
+    const stopWords = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'they', 'shall', 'will', 'have', 'been', 'were', 'not', 'but', 'all', 'one', 'two', 'their', 'what', 'so', 'up', 'out', 'if', 'about', 'who', 'get', 'which', 'go', 'me', 'when', 'make', 'can', 'like', 'time', 'no', 'just', 'him', 'know', 'take', 'people', 'into', 'year', 'your', 'good', 'some', 'could', 'them', 'see', 'other', 'than', 'then', 'now', 'look', 'only', 'come', 'its', 'over', 'think', 'also', 'back', 'after', 'use', 'two', 'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us', 'is', 'are', 'was', 'were', 'has', 'had', 'am', 'does', 'did', 'done', 'should', 'might', 'must', 'may', 'verse', 'chapter', 'book', 'bible', 'scripture', 'said', 'amen', 'hallelujah', 'yes', 'okay'])
 
     const distinctWords = new Set()
     const rawWords = text.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?"']/g, " ").split(/\s+/)
@@ -98,12 +98,9 @@ class VectorDbService {
           const lowerName = name.toLowerCase();
           if (word === lowerName) break;
           const distance = this.levenshtein(word, lowerName);
-          // Stricter threshold: Only 1 edit allowed for words < 6 chars, 2 for longer.
-          // This prevents "hope" (4) -> "house" (5) which is dist 2.
           const allowedEdits = lowerName.length < 6 ? 1 : Math.max(2, Math.floor(lowerName.length * 0.3));
 
           if (distance <= allowedEdits) {
-            console.log(`✨ Fast Fuzzy: "${word}" ➔ "${lowerName}" (dist: ${distance})`);
             distinctWords.add(lowerName);
             foundFuzzy = true;
             break;
@@ -113,6 +110,20 @@ class VectorDbService {
       if (!foundFuzzy && !stopWords.has(word) && !/^\d+$/.test(word)) { distinctWords.add(word) }
     }
     return Array.from(distinctWords)
+  }
+
+  /**
+   * Counts unique biblical keyword overlap between two texts
+   */
+  countSharedKeywords(text1, text2) {
+    if (!text1 || !text2) return 0;
+    const kw1 = new Set(this.extractKeywords(text1, true));
+    const kw2 = new Set(this.extractKeywords(text2, true));
+    let shared = 0;
+    for (const word of kw1) {
+      if (kw2.has(word)) shared++;
+    }
+    return shared;
   }
 
   setModel(modelId) {
@@ -304,51 +315,79 @@ class VectorDbService {
     // 4. Verification & Reranking Stage
     const shouldRerank = useReranker && candidates.length > 0 && isFinalMode;
 
+    const queryLower = query.toLowerCase();
+    const hasTriggerPhrase = queryLower.includes('written') ||
+      queryLower.includes('scripture') ||
+      queryLower.includes('verse') ||
+      queryLower.includes('chapter') ||
+      queryLower.includes('book of');
+
     if (shouldRerank) {
       try {
         await rerankerService.init(options.rerankerModel || 'bge-reranker-base')
         const reranked = await rerankerService.rerank(query, candidates, topK)
 
-        // CRITICAL: Map rerankerScore back to confidence so filters catch it
-        // Boost confidence significantly for UX (Hyper-aggressive curve: 0.001 -> 0.35, 0.01 -> 0.5, 0.1 -> 0.7)
-        candidates = reranked.map(c => ({
-          ...c,
-          confidence: c.rerankerScore > 0.001 ? Math.min(0.99, Math.pow(c.rerankerScore, 0.15)) : c.rerankerScore,
-          similarity: c.rerankerScore
-        }))
+        // Filter by keyword density or high semantic confidence
+        candidates = reranked.map(c => {
+          const sharedCount = this.countSharedKeywords(query, c.text);
+          const isParaphraseConfident = c.rerankerScore > 0.4; // Strong semantic signal
+          const passedDensity = sharedCount >= 3 || isParaphraseConfident || hasTriggerPhrase;
+
+          let confidence = c.rerankerScore > 0.001 ? Math.min(0.99, Math.pow(c.rerankerScore, 0.15)) : c.rerankerScore;
+
+          // Boost if has trigger phrase
+          if (hasTriggerPhrase && c.rerankerScore > 0.05) {
+            confidence = Math.max(confidence, 0.95);
+          }
+
+          return {
+            ...c,
+            confidence: passedDensity ? confidence : confidence * 0.1, // Drastically penalize if density fails
+            sharedKeywords: sharedCount,
+            passedDensity
+          };
+        }).filter(c => c.passedDensity || c.confidence > 0.85); // Keep if passed OR somehow boosted very high
+
       } catch (e) {
         console.error('Reranking failed during hybrid search:', e)
-        // Fallback to top fused results if reranking fails
         candidates = candidates.slice(0, topK)
       }
     } else if (!isFinalMode && candidates.length > 0) {
-      // For partial results, just take top fused candidates without the expensive rerank
-      // console.log('   ⏭ Skipping reranker for partial result');
+      // For partial results, be even stricter
       candidates = candidates.slice(0, topK).map((c, i) => {
-        // Still give the top one a slight confidence boost if it's okayish
-        if (i === 0 && c.confidence > 0.01) {
-          return { ...c, confidence: Math.max(c.confidence, 0.85) }
+        const sharedCount = this.countSharedKeywords(query, c.text);
+        const passedDensity = sharedCount >= 3 || hasTriggerPhrase;
+
+        let confidence = c.confidence;
+        if (i === 0 && passedDensity && c.confidence > 0.01) {
+          confidence = Math.max(c.confidence, 0.85);
         }
-        return c;
-      });
+
+        return {
+          ...c,
+          confidence: passedDensity ? confidence : 0.01,
+          passedDensity
+        };
+      }).filter(c => c.passedDensity);
     } else {
-      // If no reranker, boost top result confidence to ensure it passes threshold if it's a good match
       candidates = candidates.slice(0, topK).map((c, i) => {
-        if (i === 0 && c.confidence > 0.01) {
-          return { ...c, confidence: Math.max(c.confidence, 0.9) } // Boost top hit significantly if it exists
+        const sharedCount = this.countSharedKeywords(query, c.text);
+        const passedDensity = sharedCount >= 3 || hasTriggerPhrase || c.confidence > 0.6;
+
+        if (i === 0 && passedDensity && c.confidence > 0.01) {
+          return { ...c, confidence: Math.max(c.confidence, 0.9) }
         }
-        return c
-      })
+        return { ...c, confidence: passedDensity ? c.confidence : 0.01 }
+      }).filter(c => c.confidence > 0.02);
     }
 
     if (candidates.length > 0 && enableKeywordFusion) {
-      // console.log(`   ↳ Vectors: ${vectorResults.length} | Keywords: ${keywordResults.length}`); // Moved up
       console.log(`   ✨ Top Suggestions: ${candidates.slice(0, 3).map(m => m.reference).join(', ')}`)
     } else {
-      console.log('   ⚠️ No scripture suggestions found')
+      console.log('   ⚠️ No scripture suggestions found (Density or Confidence check failed)')
     }
 
-    return candidates
+    return candidates;
   }
 
   async searchEnsemble(query, topK = 10, priority = 'BOTH') {

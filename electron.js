@@ -351,6 +351,48 @@ ipcMain.handle('import-easyworship-songs', async () => {
   }
 })
 
+ipcMain.handle('save-session-file', async (event, data) => {
+  const { dialog } = require('electron');
+  const fs = require('fs');
+
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: 'Save Service Schedule',
+    defaultPath: `service_schedule_${new Date().toISOString().split('T')[0]}.json`,
+    filters: [{ name: 'JSON Files', extensions: ['json'] }]
+  });
+
+  if (result.canceled || !result.filePath) return false;
+
+  try {
+    fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Save error:', error);
+    return false;
+  }
+});
+
+ipcMain.handle('load-session-file', async () => {
+  const { dialog } = require('electron');
+  const fs = require('fs');
+
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Load Service Schedule',
+    filters: [{ name: 'JSON Files', extensions: ['json'] }],
+    properties: ['openFile']
+  });
+
+  if (result.canceled || result.filePaths.length === 0) return null;
+
+  try {
+    const content = fs.readFileSync(result.filePaths[0], 'utf8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('Load error:', error);
+    return null;
+  }
+});
+
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error)

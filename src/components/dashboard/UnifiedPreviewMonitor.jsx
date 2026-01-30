@@ -86,7 +86,7 @@ const UnifiedPreviewMonitor = ({ className = "" }) => {
 
                         // SCRIPTURE STYLE (black background, large reference, serif text with quotes)
                         // Only match if explicitly 'scripture' OR (has reference AND is not another known type)
-                        const isScripture = type === 'scripture' || (displayContent.reference && !['song', 'announcement', 'image', 'prayer_request', 'PRAYER_REQUEST'].includes(type));
+                        const isScripture = type?.toLowerCase() === 'scripture' || (displayContent.reference && !['song', 'announcement', 'image', 'prayer_request'].includes(type?.toLowerCase()));
 
                         if (isScripture) {
                             const scriptureSettings = getSettings('scripture');

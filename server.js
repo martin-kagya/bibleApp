@@ -91,7 +91,8 @@ io.on('connection', (socket) => {
 
     // 2. PARTIAL: Throttled Search every ~1.5s
     if (!data.isFinal) {
-      if (text.length > 5 && (now - sessionState.lastPartialSearchTime > 1500)) {
+      const wordCount = text.split(/\s+/).length;
+      if (wordCount >= 4 && text.length > 20 && (now - sessionState.lastPartialSearchTime > 1500)) {
         sessionState.lastPartialSearchTime = now;
         parallelSearchService.search(text, (type, searchData) => {
           // 1. Handle Status Updates (Spinners, etc.)
