@@ -137,7 +137,6 @@ export const ScriptureProvider = ({ children }) => {
     })
 
     newSocket.on('analysis-result', (data) => {
-      console.log('🎤 Live audio analysis:', data)
       const incomingDetections = (data.detected || []).map(d => ({
         ...d,
         isSmart: data.isSmart || d.isSmart,
@@ -316,8 +315,6 @@ export const ScriptureProvider = ({ children }) => {
   // Go Live (Broadcast)
   const goLive = useCallback(async (scripture) => {
     if (socket && scripture) {
-      console.log('🚀 Preparing go-live for:', scripture);
-
       let finalScripture = { ...scripture };
 
       // Sync with Lexicon
@@ -340,8 +337,6 @@ export const ScriptureProvider = ({ children }) => {
           setLexiconScripture(finalScripture);
         }
       }
-
-      console.log('🚀 Sending go-live payload:', finalScripture.reference);
 
       // Optimistic Update
       setLiveScripture(finalScripture);

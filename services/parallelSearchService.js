@@ -77,7 +77,8 @@ class ParallelSearchService {
             fastResults = await vectorDbService.searchHybrid(searchQuery, {
                 topK: 6,
                 useHotfixes: true,
-                isFinal
+                isFinal,
+                keywordOperator: 'OR'
             });
 
             if (fastResults.length > 0) {

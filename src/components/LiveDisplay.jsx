@@ -28,16 +28,7 @@ const LiveDisplay = () => {
                     'announcement');
     const content = String(liveScripture.content || liveScripture.text || liveScripture.problem || '');
 
-    // Debug logging for prayer requests
-    if (type === 'PRAYER_REQUEST') {
-        console.log('🔴 Rendering Prayer Request:', {
-            type,
-            name: liveScripture.name,
-            problem: liveScripture.problem,
-            content,
-            hasImage: !!liveScripture.image
-        });
-    }
+
 
     // SCRIPTURE STYLE (black background, large reference, serif text with quotes)
     if (type === 'scripture' || (liveScripture.reference && !liveScripture.type)) {
@@ -162,13 +153,7 @@ const LiveDisplay = () => {
         const prayerTopics = formatPrayerTopics(prayerText);
         const location = [liveScripture.city, liveScripture.country].filter(Boolean).join(', ') || 'Location not specified';
 
-        console.log('🎨 Rendering Prayer Request Display:', {
-            name: liveScripture.name,
-            location,
-            topicsCount: prayerTopics.length,
-            hasImage: !!liveScripture.image,
-            prayerText: prayerText.substring(0, 50)
-        });
+
 
         return (
             <div className={`min-h-screen bg-gradient-to-br ${prayerSettings.backgroundGradient} overflow-hidden animate-fade-in cursor-none`}>

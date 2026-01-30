@@ -249,7 +249,7 @@ class LocalBibleService {
     /**
      * Search using FTS5 for keywords
      */
-    searchByKeyword(query, limit = 20) {
+    searchByKeyword(query, limit = 20, operator = 'AND') {
         if (!db) this.initializeDb()
 
         try {
@@ -271,7 +271,8 @@ class LocalBibleService {
             const cleanQuery = this.sanitizeQuery(query)
 
             // Format for AND search: "word1 AND word2 AND word3"
-            const ftsQuery = cleanQuery.split(/\s+/).filter(t => t.length > 0).join(' AND ')
+            const joinOp = operator === 'OR' ? ' OR ' : ' AND ';
+            const ftsQuery = cleanQuery.split(/\s+/).filter(t => t.length > 0).map(t => `"${t}"`).join(joinOp)
 
             if (!ftsQuery) return []
 

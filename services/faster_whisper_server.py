@@ -16,7 +16,7 @@ COMPUTE_TYPE = "int8"   # or "float32"
 SAMPLE_RATE = 16000
 CHANNELS = 1
 BYTES_PER_SAMPLE = 2     # 16-bit
-WINDOW_STEP = 0.4       # Transcribe every 0.4s of new audio (lowered from 0.5s)
+WINDOW_STEP = 0.2       # Transcribe every 0.2s of new audio (lowered from 0.4s) for faster feedback
 INITIAL_PROMPT = "Pneuma World Ministries, Bishop Isaac Oti Boateng, Hallelujah, Amen, Scripture, Genesis, Revelation, Jesus Christ, Holy Spirit, Witnessing."
 
 # Global State
@@ -164,7 +164,6 @@ def main():
                 seg = segments[i]
                 msg = {"type": "final", "text": seg.text.strip(), "start": seg.start, "end": seg.end}
                 safe_print(msg)
-                log(f"Final: {seg.text}")
                 
             # Remove finalized audio from buffer
             if final_segments_count > 0:
