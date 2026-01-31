@@ -16,14 +16,12 @@ let lastSpeechTime = 0
 
 export const SpeechProvider = ({ children, onTranscriptChange }) => {
   const [isListening, setIsListening] = useState(false)
-  const [transcript, setTranscript] = useState('')
+  const [transcriptHistory, setTranscriptHistory] = useState([])
+  const [currentSegment, setCurrentSegment] = useState('')
+  const transcript = [...transcriptHistory, currentSegment].filter(Boolean).join(' ')
+
   const [isSupported, setIsSupported] = useState(false)
   const [error, setError] = useState(null)
-  const [debugLog, setDebugLog] = useState([])
-
-  const addDebugLog = useCallback((message, type = 'info', details = null) => {
-    setDebugLog(prev => [...prev.slice(-19), { timestamp: Date.now(), message, type, details }])
-  }, [])
 
   const audioStreamRef = useRef(null)
   const audioContextRef = useRef(null)
@@ -61,12 +59,11 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
 
       if (transcriptText) {
         if (data.isFinal) {
-          console.log('✅ Vosk (Final):', data.transcript)
+          setTranscriptHistory(prev => [...prev, transcriptText])
+          setCurrentSegment('')
         } else {
-          // console.log('🎙️ Vosk (Partial):', data.transcript)
+          setCurrentSegment(transcriptText)
         }
-
-        setTranscript(transcriptText)
 
         if (onTranscriptChange && data.isFinal) {
           onTranscriptChange(transcriptText)
@@ -93,7 +90,8 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
     if (!socket) return
 
     const handleContextCleared = () => {
-      setTranscript('')
+      setTranscriptHistory([])
+      setCurrentSegment('')
       finalTranscriptRef.current = ''
     }
 
@@ -188,7 +186,6 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
       const msg = 'Not connected to server'
       console.error('❌', msg)
       setError(msg)
-      addDebugLog('Socket not connected', 'error')
       return
     }
 
@@ -199,7 +196,7 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
 
     try {
       console.log(`🎤 Starting recording source: ${source}...`)
-      addDebugLog(`Starting recording (${source})...`, 'info')
+
 
       let stream;
 
@@ -255,7 +252,6 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
       processor.connect(audioContext.destination)
 
       console.log('🔗 Audio graph connected: Source -> Processor -> Destination')
-      addDebugLog('Audio graph connected', 'info')
 
       setIsListening(true)
 
@@ -301,12 +297,10 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
           const wavBuffer = pcmToWav(resampled, 16000)
 
           console.log(`🎤 Sending ${wavBuffer.byteLength} bytes at 16000Hz`)
-          addDebugLog(`Sending audio at 16000Hz`, 'info')
 
           if (socket?.connected) {
             socket.emit('audio-chunk', { audio: wavBuffer })
             console.log(`✅ Sent ${wavBuffer.byteLength} bytes`)
-            addDebugLog(`Sent ${wavBuffer.byteLength} bytes`, 'success')
           }
         } catch (err) {
           console.error('Send error:', err)
@@ -318,7 +312,6 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
       processor.onaudioprocess = (e) => {
         if (audioProcessCount === 0) {
           console.log('🎤 Audio processing callback started')
-          addDebugLog('Audio processing started', 'info')
         }
         audioProcessCount++
         const inputData = e.inputBuffer.getChannelData(0)
@@ -341,7 +334,6 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
         if (audioProcessCount % 20 === 0) {
           const isSpeech = rms > VAD_THRESHOLD
           const lev = (max * 100).toFixed(1)
-          addDebugLog(`Audio Level: ${lev}%`, isSpeech ? 'success' : 'info')
 
           if (max < 0.0001) {
             console.warn('⚠️ No audio input detected (mic muted?)')
@@ -405,7 +397,8 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
 
   const clearTranscript = useCallback(() => {
     console.log('🧹 Clearing transcript and context...')
-    setTranscript('')
+    setTranscriptHistory([])
+    setCurrentSegment('')
     finalTranscriptRef.current = ''
 
     // Notify backend to clear context
@@ -444,8 +437,7 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
     stopListening,
     clearTranscript,
     initializeSpeechRecognition,
-    sourceType,
-    debugLog
+    sourceType
   }
 
   return (

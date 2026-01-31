@@ -72,14 +72,13 @@ io.on('connection', (socket) => {
   const onTranscript = (data) => {
     const text = (data.text || '').trim();
     if (!text) return;
-    console.log(`📡 Transcript Event: "${text.substring(0, 30)}..." (Final: ${data.isFinal})`);
 
     // Only skip if it's the SAME text AND same finality status
     if (text === sessionState.lastProcessedText && !data.isFinal) return;
 
     sessionState.lastProcessedText = text;
 
-    console.log(`🎤 Server heard: "${text}" (${data.isFinal ? 'FINAL' : 'PARTIAL'})`);
+    sessionState.lastProcessedText = text;
 
     // 1. Send text to frontend for immediate display
     socket.emit('transcript-update', {
@@ -92,7 +91,8 @@ io.on('connection', (socket) => {
 
     // 2. PARTIAL: Throttled Search every ~1.5s
     if (!data.isFinal) {
-      if (text.length > 5 && (now - sessionState.lastPartialSearchTime > 1500)) {
+      const wordCount = text.split(/\s+/).length;
+      if (wordCount >= 4 && text.length > 20 && (now - sessionState.lastPartialSearchTime > 1500)) {
         sessionState.lastPartialSearchTime = now;
         parallelSearchService.search(text, (type, searchData) => {
           // 1. Handle Status Updates (Spinners, etc.)

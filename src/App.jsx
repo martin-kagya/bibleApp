@@ -5,7 +5,7 @@ import LiveDisplay from './components/LiveDisplay'
 import { SpeechProvider } from './contexts/SpeechContext'
 import { ScriptureProvider, useScripture } from './contexts/ScriptureContext'
 import { ProjectionSettingsProvider } from './contexts/ProjectionSettingsContext'
-import DebugPanel from './components/DebugPanel'
+
 
 const MainLayout = () => (
   <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50">
@@ -32,7 +32,7 @@ const AppContent = () => {
   return (
     <SpeechProvider onTranscriptChange={handleTranscriptChange}>
       <Router>
-        <DebugPanel />
+
         <Routes>
           <Route path="/live" element={<LiveDisplay />} />
           {/* Main Route - Wraps Dashboard via PresentationDisplay */}

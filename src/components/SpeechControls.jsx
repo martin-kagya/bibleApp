@@ -68,7 +68,7 @@ const SpeechControls = () => {
         onClick={() => isListening ? stopListening() : startListening(sourceType)}
         className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isListening
           ? 'bg-red-600 hover:bg-red-700 text-white'
-          : 'bg-primary-600 hover:bg-primary-700 text-white'
+          : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
       >
         {isListening ? (

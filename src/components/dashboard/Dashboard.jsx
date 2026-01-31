@@ -20,6 +20,52 @@ const TABS = [
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('scripture');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const containerRef = React.useRef(null);
+
+    // Resizing logic for Scripture Tab (Left, Center, Right columns)
+    const [ratios, setRatios] = useState([28, 42, 30]);
+
+    const handleMouseDown = (index, e) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startRatios = [...ratios];
+        const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
+
+        const onMouseMove = (moveEvent) => {
+            const deltaX = moveEvent.clientX - startX;
+            const deltaRatio = (deltaX / containerWidth) * 100;
+
+            const newRatios = [...startRatios];
+
+            // Adjust both sides of the handle with a minimum size safeguard
+            const minSize = 15;
+            const totalAvailable = startRatios[index] + startRatios[index + 1];
+
+            let nextVal = startRatios[index] + deltaRatio;
+            let nextNeighborVal = startRatios[index + 1] - deltaRatio;
+
+            if (nextVal < minSize) {
+                nextVal = minSize;
+                nextNeighborVal = totalAvailable - minSize;
+            } else if (nextNeighborVal < minSize) {
+                nextNeighborVal = minSize;
+                nextVal = totalAvailable - minSize;
+            }
+
+            newRatios[index] = nextVal;
+            newRatios[index + 1] = nextNeighborVal;
+
+            setRatios(newRatios);
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
 
     const toggleTheme = () => {
         document.documentElement.classList.toggle('dark')
@@ -71,9 +117,12 @@ const Dashboard = () => {
             {/* Main Content - Conditional on Active Tab */}
             <main className="flex-1 p-6 min-h-0 overflow-hidden">
                 {activeTab === 'scripture' && (
-                    <div className="h-full grid grid-cols-12 gap-6">
-                        {/* LEFT COLUMN: Transcription & Search (4 cols) */}
-                        <div className="col-span-12 lg:col-span-4 h-full flex flex-col gap-6 min-h-0">
+                    <div ref={containerRef} className="h-full flex flex-col lg:flex-row gap-0 overflow-hidden">
+                        {/* LEFT COLUMN: Transcription & Search */}
+                        <div
+                            style={{ flex: `0 0 ${ratios[0]}%` }}
+                            className="flex flex-col gap-6 min-h-0 lg:pr-3 overflow-hidden min-w-[250px]"
+                        >
                             {/* Top: Transcription (Reduced Height ~35%) */}
                             <div className="h-[35%] shrink-0 min-h-0">
                                 <TranscriptionTile />
@@ -84,8 +133,19 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* CENTER COLUMN: Live & Suggestions (5 cols) */}
-                        <div className="col-span-12 lg:col-span-5 h-full flex flex-col gap-6 min-h-0">
+                        {/* Resizer 1 */}
+                        <div
+                            onMouseDown={(e) => handleMouseDown(0, e)}
+                            className="hidden lg:flex w-2 h-full cursor-col-resize hover:bg-primary/10 transition-colors items-center justify-center group z-20"
+                        >
+                            <div className="w-0.5 h-12 bg-border group-hover:bg-primary/40 rounded-full transition-colors" />
+                        </div>
+
+                        {/* CENTER COLUMN: Live & Suggestions */}
+                        <div
+                            style={{ flex: `0 0 ${ratios[1]}%` }}
+                            className="flex flex-col gap-6 min-h-0 lg:px-3 overflow-hidden min-w-[300px]"
+                        >
                             {/* Top: Live Presentation (Compact) */}
                             <div className="shrink-0">
                                 <LiveScriptureTile />
@@ -102,8 +162,19 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN: History Panel (3 cols) */}
-                        <div className="col-span-12 lg:col-span-3 h-full min-h-0">
+                        {/* Resizer 2 */}
+                        <div
+                            onMouseDown={(e) => handleMouseDown(1, e)}
+                            className="hidden lg:flex w-2 h-full cursor-col-resize hover:bg-primary/10 transition-colors items-center justify-center group z-20"
+                        >
+                            <div className="w-0.5 h-12 bg-border group-hover:bg-primary/40 rounded-full transition-colors" />
+                        </div>
+
+                        {/* RIGHT COLUMN: History Panel */}
+                        <div
+                            style={{ flex: `0 0 ${ratios[2]}%` }}
+                            className="h-full min-h-0 lg:pl-3 min-w-[200px]"
+                        >
                             <StudyCenter />
                         </div>
                     </div>

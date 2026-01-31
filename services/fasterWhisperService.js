@@ -38,7 +38,7 @@ class FasterWhisperService extends EventEmitter {
                         const msg = JSON.parse(line);
                         this.handleMessage(msg);
                     } catch (e) {
-                        console.error('JSON Parse Error from Python line:', line, e);
+                        // console.error('JSON Parse Error from Python line:', line, e);
                     }
                 }
             });

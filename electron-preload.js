@@ -26,6 +26,10 @@ contextBridge.exposeInMainWorld('electron', {
   importEasyWorshipSongs: () => ipcRenderer.invoke('import-easyworship-songs'),
   importXmlSongs: () => ipcRenderer.invoke('import-xml-songs'),
 
+  // Session Management
+  saveSessionFile: (data) => ipcRenderer.invoke('save-session-file', data),
+  loadSessionFile: () => ipcRenderer.invoke('load-session-file'),
+
   // Media Sources
   getDesktopSources: () => ipcRenderer.invoke('get-desktop-sources')
 })

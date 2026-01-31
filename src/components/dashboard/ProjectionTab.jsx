@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Image, Type, Trash2, Play, Upload, X, FileText, Heart, MapPin, Globe, User, Edit2 } from 'lucide-react';
+import { Search, Image, FileText, Play, Eye, Trash2, Edit2, Plus, PlusCircle, LayoutGrid, List, FileJson, Heart, Upload, X, Type, MapPin, Globe, User } from 'lucide-react';
 import {
     getAllProjections,
     addProjection,
@@ -19,7 +19,7 @@ import UnifiedPreviewMonitor from './UnifiedPreviewMonitor';
 /**
  * PrayerRequestItem - Display prayer request with image and details
  */
-const PrayerRequestItem = ({ item, onProject, onDelete, onEdit, onPreview }) => {
+const PrayerRequestItem = ({ item, onProject, onDelete, onEdit, onPreview, addToSchedule }) => {
     return (
         <div className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md transition-all">
             <div className="aspect-[4/3] bg-muted relative overflow-hidden">
@@ -66,6 +66,15 @@ const PrayerRequestItem = ({ item, onProject, onDelete, onEdit, onPreview }) => 
                     >
                         <Play className="w-4 h-4" fill="currentColor" />
                     </button>
+                    {addToSchedule && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); addToSchedule(item); }}
+                            className="p-2 bg-muted text-muted-foreground rounded-full hover:bg-accent hover:text-accent-foreground shadow-sm"
+                            title="Add to Schedule"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+                    )}
                     <button
                         onClick={() => onDelete(item.id)}
                         className="p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
@@ -88,16 +97,16 @@ const PrayerRequestItem = ({ item, onProject, onDelete, onEdit, onPreview }) => 
 /**
  * ProjectionItem - Individual projection item display
  */
-const ProjectionItem = ({ item, onProject, onDelete, onEdit, onPreview }) => {
+const ProjectionItem = ({ item, onProject, onDelete, onEdit, onPreview, addToSchedule }) => {
     const isImage = item.type === PROJECTION_TYPES.IMAGE;
     const isPrayerRequest = item.type === PROJECTION_TYPES.PRAYER_REQUEST;
 
     if (isPrayerRequest) {
-        return <PrayerRequestItem item={item} onProject={onProject} onDelete={onDelete} onEdit={onEdit} onPreview={onPreview} />;
+        return <PrayerRequestItem item={item} onProject={onProject} onDelete={onDelete} onEdit={onEdit} onPreview={onPreview} addToSchedule={addToSchedule} />;
     }
 
     return (
-        <div 
+        <div
             className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md transition-all cursor-pointer"
             onDoubleClick={() => onProject(item)}
         >
@@ -125,6 +134,15 @@ const ProjectionItem = ({ item, onProject, onDelete, onEdit, onPreview }) => {
                         >
                             <Play className="w-4 h-4" fill="currentColor" />
                         </button>
+                        {addToSchedule && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); addToSchedule(item); }}
+                                className="p-2 bg-muted text-muted-foreground rounded-full hover:bg-accent hover:text-accent-foreground shadow-sm"
+                                title="Add to Schedule"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        )}
                         <button
                             onClick={() => onDelete(item.id)}
                             className="p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
@@ -160,13 +178,24 @@ const ProjectionItem = ({ item, onProject, onDelete, onEdit, onPreview }) => {
                                     <Type className="w-3 h-3" />
                                 </button>
                             )}
-                            <button
-                                onClick={() => onProject(item)}
-                                className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Project"
-                            >
-                                <Play className="w-3 h-3" fill="currentColor" />
-                            </button>
+                            <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onProject(item); }}
+                                    className="p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 shadow-sm"
+                                    title="Go Live"
+                                >
+                                    <Play className="w-3.5 h-3.5" fill="currentColor" />
+                                </button>
+                                {addToSchedule && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); addToSchedule(item); }}
+                                        className="p-2 bg-muted text-muted-foreground rounded-full hover:bg-accent hover:text-accent-foreground shadow-sm"
+                                        title="Add to Schedule"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
                             <button
                                 onClick={() => onDelete(item.id)}
                                 className="p-2 hover:bg-destructive/10 text-destructive rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -475,7 +504,13 @@ const ProjectionTab = () => {
     const [editingPrayerRequest, setEditingPrayerRequest] = useState(null);
     const [filter, setFilter] = useState('all');
     const fileInputRef = useRef(null);
-    const { projectContent, setPreviewContent, goLive } = useScripture?.() || {};
+    const {
+        goLive,
+        setPreviewContent,
+        projectContent,
+        addToSchedule,
+        liveScripture
+    } = useScripture();
 
     useEffect(() => {
         loadItems();
@@ -602,6 +637,49 @@ const ProjectionTab = () => {
         }
     };
 
+    // Resizing Logic
+    const [ratios, setRatios] = useState([66, 34]);
+    const containerRef = useRef(null);
+
+    const handleMouseDown = (index, e) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startRatios = [...ratios];
+        const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
+
+        const onMouseMove = (moveEvent) => {
+            const deltaX = moveEvent.clientX - startX;
+            const deltaRatio = (deltaX / containerWidth) * 100;
+
+            const newRatios = [...startRatios];
+            const minSize = 15;
+            const totalAvailable = startRatios[index] + startRatios[index + 1];
+
+            let nextVal = startRatios[index] + deltaRatio;
+            let nextNeighborVal = startRatios[index + 1] - deltaRatio;
+
+            if (nextVal < minSize) {
+                nextVal = minSize;
+                nextNeighborVal = totalAvailable - minSize;
+            } else if (nextNeighborVal < minSize) {
+                nextNeighborVal = minSize;
+                nextVal = totalAvailable - minSize;
+            }
+
+            newRatios[index] = nextVal;
+            newRatios[index + 1] = nextNeighborVal;
+            setRatios(newRatios);
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
+
     const filteredItems = filter === 'all'
         ? items
         : items.filter(item => item.type === filter);
@@ -624,7 +702,7 @@ const ProjectionTab = () => {
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filter === key
                                 ? 'bg-primary text-primary-foreground border-primary'
                                 : 'bg-background text-muted-foreground border-input hover:bg-muted'
-                                }`}
+                                } `}
                         >
                             {Icon && <Icon className="w-3 h-3" />}
                             {label}
@@ -667,16 +745,30 @@ const ProjectionTab = () => {
             </div>
 
             {/* Main Content: Large Preview Monitor + Items Grid */}
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0 overflow-hidden">
-                {/* Large Preview Monitor - Takes 2/3 on large screens, full width on smaller */}
-                <div className="lg:col-span-2 flex items-center justify-center min-h-0">
+            <div ref={containerRef} className="flex-1 flex flex-col lg:flex-row gap-0 min-h-0 overflow-hidden">
+                {/* Large Preview Monitor */}
+                <div
+                    style={{ flex: `0 0 ${ratios[0]}%` }}
+                    className="flex items-center justify-center min-h-0 overflow-hidden lg:pr-3 min-w-[300px]"
+                >
                     <div className="w-full h-full max-h-full flex items-center justify-center">
                         <UnifiedPreviewMonitor className="w-full max-w-full h-full max-h-full scale-100" />
                     </div>
                 </div>
 
-                {/* Items Grid - Takes 1/3 on large screens */}
-                <div className="lg:col-span-1 overflow-y-auto min-h-0 pr-1">
+                {/* Resizer */}
+                <div
+                    onMouseDown={(e) => handleMouseDown(0, e)}
+                    className="hidden lg:flex w-2 h-full cursor-col-resize hover:bg-primary/10 transition-colors items-center justify-center group z-20"
+                >
+                    <div className="w-0.5 h-12 bg-border group-hover:bg-primary/40 rounded-full transition-colors" />
+                </div>
+
+                {/* Items Grid */}
+                <div
+                    style={{ flex: `0 0 ${ratios[1]}%` }}
+                    className="overflow-y-auto min-h-0 lg:pl-3 pr-1 min-w-[250px]"
+                >
                     {filteredItems.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4">
                             {filteredItems.map((item) => (
@@ -687,6 +779,7 @@ const ProjectionTab = () => {
                                     onPreview={handlePreviewItem}
                                     onDelete={handleDeleteItem}
                                     onEdit={handleEditPrayerRequest}
+                                    addToSchedule={addToSchedule}
                                 />
                             ))}
                         </div>

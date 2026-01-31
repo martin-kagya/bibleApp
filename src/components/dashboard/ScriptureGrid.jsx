@@ -1,6 +1,6 @@
 import React from 'react'
 import { useScripture } from '../../contexts/ScriptureContext'
-import { Play, Eye, BookOpen, Sparkles } from 'lucide-react'
+import { Play, Eye, BookOpen, Sparkles, Plus } from 'lucide-react'
 
 const ScriptureGrid = () => {
     const {
@@ -9,7 +9,8 @@ const ScriptureGrid = () => {
         displayScripture,
         goLive,
         previewContent,
-        liveScripture
+        liveScripture,
+        addToSchedule
     } = useScripture()
     const [selectedIndex, setSelectedIndex] = React.useState(-1)
     const itemRefs = React.useRef([])
@@ -196,6 +197,13 @@ const ScriptureGrid = () => {
                                 title="Preview"
                             >
                                 <Eye className={`h-4 w-4 ${isPreview ? 'fill-current' : ''}`} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); addToSchedule({ ...s, type: 'scripture' }); }}
+                                className="flex-1 px-4 py-3 sm:py-0 flex items-center justify-center transition-colors hover:bg-accent"
+                                title="Add to Schedule"
+                            >
+                                <Plus className="h-4 w-4" />
                             </button>
                         </div>
                     </div>

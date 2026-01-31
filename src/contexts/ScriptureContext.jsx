@@ -87,6 +87,16 @@ export const ScriptureProvider = ({ children }) => {
     }
   })
 
+  // Service Schedule State
+  const [schedule, setSchedule] = useState(() => {
+    try {
+      const saved = localStorage.getItem('serviceSchedule')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [socket, setSocket] = useState(null)
   const [sessionId, setSessionId] = useState(null)
@@ -137,7 +147,6 @@ export const ScriptureProvider = ({ children }) => {
     })
 
     newSocket.on('analysis-result', (data) => {
-      console.log('🎤 Live audio analysis:', data)
       const incomingDetections = (data.detected || []).map(d => ({
         ...d,
         isSmart: data.isSmart || d.isSmart,
@@ -239,6 +248,65 @@ export const ScriptureProvider = ({ children }) => {
     }
   }, [socket, sessionId])
 
+  // --- Schedule Management ---
+  const addToSchedule = useCallback((item) => {
+    setSchedule(prev => {
+      // Ensure unique ID
+      const newItem = {
+        ...item,
+        id: item.id || Date.now() + Math.random(),
+        timestamp: new Date().toISOString()
+      }
+      const updated = [...prev, newItem]
+      localStorage.setItem('serviceSchedule', JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const removeFromSchedule = useCallback((id) => {
+    setSchedule(prev => {
+      const updated = prev.filter(item => item.id !== id)
+      localStorage.setItem('serviceSchedule', JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
+  const moveScheduleItem = useCallback((fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= schedule.length) return;
+    setSchedule(prev => {
+      const result = Array.from(prev);
+      const [removed] = result.splice(fromIndex, 1);
+      result.splice(toIndex, 0, removed);
+      localStorage.setItem('serviceSchedule', JSON.stringify(result))
+      return result;
+    });
+  }, [schedule.length]);
+
+  const clearSchedule = useCallback(() => {
+    setSchedule([]);
+    localStorage.removeItem('serviceSchedule');
+  }, []);
+
+  const saveScheduleToFile = useCallback(async () => {
+    if (window.electron && window.electron.saveSessionFile) {
+      const success = await window.electron.saveSessionFile(schedule);
+      return success;
+    }
+    return false;
+  }, [schedule]);
+
+  const loadScheduleFromFile = useCallback(async () => {
+    if (window.electron && window.electron.loadSessionFile) {
+      const data = await window.electron.loadSessionFile();
+      if (data && Array.isArray(data)) {
+        setSchedule(data);
+        localStorage.setItem('serviceSchedule', JSON.stringify(data));
+        return true;
+      }
+    }
+    return false;
+  }, []);
+
   // Manual scripture detection (REST API fallback)
   const detectScriptures = useCallback(async (transcript) => {
     if (!transcript.trim()) return
@@ -316,8 +384,6 @@ export const ScriptureProvider = ({ children }) => {
   // Go Live (Broadcast)
   const goLive = useCallback(async (scripture) => {
     if (socket && scripture) {
-      console.log('🚀 Preparing go-live for:', scripture);
-
       let finalScripture = { ...scripture };
 
       // Sync with Lexicon
@@ -340,8 +406,6 @@ export const ScriptureProvider = ({ children }) => {
           setLexiconScripture(finalScripture);
         }
       }
-
-      console.log('🚀 Sending go-live payload:', finalScripture.reference);
 
       // Optimistic Update
       setLiveScripture(finalScripture);
@@ -442,6 +506,7 @@ export const ScriptureProvider = ({ children }) => {
       liveScripture,
       liveTranscript,
       projectionHistory,
+      schedule,
       isAnalyzing,
       isSmartAnalyzing,
       isConnected,
@@ -453,6 +518,12 @@ export const ScriptureProvider = ({ children }) => {
       clearLive,
       clearHistory,
       removeFromHistory,
+      addToSchedule,
+      removeFromSchedule,
+      moveScheduleItem,
+      clearSchedule,
+      saveScheduleToFile,
+      loadScheduleFromFile,
       searchSemantic,
       clearCurrentScripture,
       clearAll,

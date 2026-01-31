@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { History, BookOpen, Clock, Play, Trash2, X, Search, Book } from 'lucide-react';
+import { History, BookOpen, Clock, Play, Trash2, X, Search, Book, Calendar } from 'lucide-react';
 import { useScripture } from '../../contexts/ScriptureContext';
+import SchedulePanel from './SchedulePanel';
 
 /**
  * StudyCenter - Combined History and Lexicon/Study Panel
  */
 const StudyCenter = () => {
-    const [activeTab, setActiveTab] = useState('study'); // 'history' | 'dictionary' | 'study'
+    const [activeTab, setActiveTab] = useState('schedule'); // Default to schedule now as it's the "Daily" focus
 
     const { projectionHistory, goLive, clearHistory, removeFromHistory, setPreviewContent, lexiconScripture } = useScripture();
 
@@ -101,20 +102,28 @@ const StudyCenter = () => {
         }
     };
 
+    const openInLexicon = (reference) => {
+        if (!reference) return;
+        setSearchQuery(reference);
+        setActiveTab('study');
+        // Trigger the search logic
+        const fakeEvent = { preventDefault: () => { } };
+        handleStudySearch(fakeEvent, reference);
+    };
+
     // --- Study Logic ---
-    const handleStudySearch = async (e) => {
-        e.preventDefault();
-        if (!searchQuery.trim()) return;
+    const handleStudySearch = async (e, forcedQuery = null) => {
+        if (e) e.preventDefault();
+        const activeQuery = forcedQuery || searchQuery;
+        if (!activeQuery.trim()) return;
 
         try {
-            // Determine if it's a verse ref (e.g. John 3:16, gen 1,1) or a word search
-            // We also assume if it starts with a number (1 John) or a known book abbrev, it might be a ref
-            // But checking for number-delimiter-number is the strongest signal for "chapter:verse"
-            const isRef = /\d+[:.,]\d+/.test(searchQuery);
+            // Determine if it's a verse ref
+            const isRef = /\d+[:.,]\d+/.test(activeQuery) || activeQuery.split(' ').length > 1;
 
             if (isRef) {
                 // Fetch Interlinear
-                const response = await fetch(`http://localhost:8000/api/lexicon/interlinear/${encodeURIComponent(searchQuery)}`);
+                const response = await fetch(`http://localhost:8000/api/lexicon/interlinear/${encodeURIComponent(activeQuery)}`);
                 if (!response.ok) throw new Error('Verse not found');
                 const data = await response.json();
 
@@ -127,7 +136,7 @@ const StudyCenter = () => {
                     }));
                 } else {
                     // Fallback to legacy parsing
-                    parsedWords = data.text.split(' ').map(token => {
+                    parsedWords = (data.text || '').split(' ').map(token => {
                         const match = token.match(/(.+)\[([GH]\d+)\]/);
                         if (match) {
                             return { text: match[1], strong: match[2], definition: 'Loading...' };
@@ -138,13 +147,13 @@ const StudyCenter = () => {
 
                 setActiveTab('study');
                 setStudyResults({
-                    reference: data.reference,
+                    reference: data.reference || activeQuery,
                     words: parsedWords
                 });
             } else {
                 // Dictionary Search
                 setActiveTab('dictionary');
-                const response = await fetch(`http://localhost:8000/api/lexicon/search?q=${encodeURIComponent(searchQuery)}`);
+                const response = await fetch(`http://localhost:8000/api/lexicon/search?q=${encodeURIComponent(activeQuery)}`);
                 if (!response.ok) throw new Error('Term not found');
                 const data = await response.json();
 
@@ -243,21 +252,6 @@ const StudyCenter = () => {
         }
     };
 
-    const previewDefinition = () => {
-        if (!selectedWord) return;
-        const previewData = {
-            type: 'definition',
-            reference: `Dictionary: ${selectedWord.strong || selectedWord.original}`,
-            title: `Dictionary: ${selectedWord.strong || selectedWord.original}`,
-            content: selectedWord.definition,
-            text: selectedWord.definition,
-            translation: selectedWord.source || 'Lexicon'
-        };
-        if (setPreviewContent) {
-            setPreviewContent(previewData);
-        }
-    };
-
     const presentDefinition = () => {
         if (!selectedWord) return;
         const liveData = {
@@ -283,45 +277,58 @@ const StudyCenter = () => {
 
 
     return (
-        <div className="h-full flex flex-col bg-card/50 rounded-xl border border-dashed overflow-hidden">
-            {/* Tab Header */}
-            <div className="flex items-center border-b border-border bg-muted/30">
+        <div className="h-full flex bg-card/50 rounded-xl border border-dashed overflow-hidden">
+            {/* Vertical Navigation Rail */}
+            <div className="w-14 shrink-0 bg-muted/30 border-r border-border flex flex-col items-center py-4 gap-4">
+                <button
+                    onClick={() => setActiveTab('schedule')}
+                    className={`p-3 rounded-xl transition-all ${activeTab === 'schedule'
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        }`}
+                    title="Service Schedule"
+                >
+                    <Calendar className="w-5 h-5" />
+                </button>
                 <button
                     onClick={() => setActiveTab('history')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'history'
-                        ? 'border-primary text-primary bg-background'
-                        : 'border-transparent text-muted-foreground hover:bg-muted/50'
+                    className={`p-3 rounded-xl transition-all ${activeTab === 'history'
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         }`}
+                    title="Projection History"
                 >
-                    <History className="w-3.5 h-3.5" />
-                    History
+                    <History className="w-5 h-5" />
                 </button>
-                <div className="w-px h-4 bg-border" />
-                <button
-                    onClick={() => setActiveTab('dictionary')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'dictionary'
-                        ? 'border-primary text-primary bg-background'
-                        : 'border-transparent text-muted-foreground hover:bg-muted/50'
-                        }`}
-                >
-                    <Book className="w-3.5 h-3.5" />
-                    Dictionary
-                </button>
-                <div className="w-px h-4 bg-border" />
+                <div className="w-8 h-px bg-border my-2" />
                 <button
                     onClick={() => setActiveTab('study')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'study'
-                        ? 'border-primary text-primary bg-background'
-                        : 'border-transparent text-muted-foreground hover:bg-muted/50'
+                    className={`p-3 rounded-xl transition-all ${activeTab === 'study'
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         }`}
+                    title="Lexicon (Interlinear)"
                 >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    Lexicon
+                    <BookOpen className="w-5 h-5" />
+                </button>
+                <button
+                    onClick={() => setActiveTab('dictionary')}
+                    className={`p-3 rounded-xl transition-all ${activeTab === 'dictionary'
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        }`}
+                    title="Dictionary"
+                >
+                    <Book className="w-5 h-5" />
                 </button>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-hidden relative">
+            <div className="flex-1 overflow-hidden relative flex flex-col">
+                {/* --- SCHEDULE TAB --- */}
+                {activeTab === 'schedule' && (
+                    <SchedulePanel openInLexicon={openInLexicon} />
+                )}
 
                 {/* --- HISTORY TAB --- */}
                 {activeTab === 'history' && (
@@ -359,7 +366,10 @@ const StudyCenter = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={(e) => { e.stopPropagation(); handleHistoryItemClick(item, true); }} className="p-1.5 bg-primary text-primary-foreground rounded-full hover:bg-primary/90" title="Go Live (double-click to preview first)">
+                                                <button onClick={(e) => { e.stopPropagation(); openInLexicon(item.reference); }} className="p-1.5 hover:bg-primary/10 text-primary rounded-full transition-colors" title="Open in Lexicon">
+                                                    <BookOpen className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleHistoryItemClick(item, true); }} className="p-1.5 bg-primary text-primary-foreground rounded-full hover:bg-primary/90" title="Go Live">
                                                     <Play className="w-2.5 h-2.5" fill="currentColor" />
                                                 </button>
                                                 <button onClick={(e) => { e.stopPropagation(); removeFromHistory(item.id); }} className="p-1.5 hover:bg-destructive/10 text-destructive rounded-full">
@@ -384,9 +394,9 @@ const StudyCenter = () => {
                     <div className="h-full flex flex-col bg-background/30 p-4">
                         {selectedWord ? (
                             <div className="flex flex-col h-full animate-in fade-in zoom-in-95 duration-200">
-                                <div className="flex items-start justify-between mb-4 pb-4 border-b border-border border-dashed">
-                                    <div>
-                                        <h3 className="text-3xl font-bold font-serif text-primary tracking-tight mb-1">{selectedWord.original}</h3>
+                                <div className="flex flex-col gap-4 mb-4 pb-4 border-b border-border border-dashed">
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-xl font-bold font-serif text-primary tracking-tight leading-tight">{selectedWord.original}</h3>
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
                                                 {selectedWord.strong && (
@@ -400,21 +410,13 @@ const StudyCenter = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <button
-                                            onClick={previewDefinition}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors shadow-sm"
-                                        >
-                                            Preview
-                                        </button>
-                                        <button
-                                            onClick={presentDefinition}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-md hover:bg-primary/90 transition-colors shadow-sm"
-                                        >
-                                            <Play className="w-3.5 h-3.5 fill-current" />
-                                            Present
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={presentDefinition}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md active:scale-[0.98]"
+                                    >
+                                        <Play className="w-4 h-4 fill-current" />
+                                        Present Now
+                                    </button>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">

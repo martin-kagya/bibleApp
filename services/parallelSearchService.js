@@ -36,9 +36,13 @@ class ParallelSearchService {
         const numbers = (query.match(/\d+/g) || []).length;
         const meaningfulLevel = keywords.filter(k => !stopWords.has(k)).length + numbers;
         const hasReferencePattern = (keywords.length >= 1 && numbers >= 1);
+        const wordCount = query.trim().split(/\s+/).length;
+
+        // 0. NOISE GATE: Minimum word count of 4 for general talk
+        if (wordCount < 4 && !hasReferencePattern) return;
 
         if (meaningfulLevel < 2 && !isFinal && !hasReferencePattern) return;
-        if (query.trim().length < 8 && !isFinal && !hasReferencePattern) return;
+        if (query.trim().length < 15 && !isFinal && !hasReferencePattern) return;
 
         let bestFastScore = 0;
         let fastResults = [];
@@ -77,7 +81,8 @@ class ParallelSearchService {
             fastResults = await vectorDbService.searchHybrid(searchQuery, {
                 topK: 6,
                 useHotfixes: true,
-                isFinal
+                isFinal,
+                keywordOperator: 'OR'
             });
 
             if (fastResults.length > 0) {

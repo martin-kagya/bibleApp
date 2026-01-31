@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Loader2 } from 'lucide-react';
+import { Play, Loader2, Plus, Cloud } from 'lucide-react';
 import { useScripture } from '../contexts/ScriptureContext';
 
 const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => {
@@ -12,7 +12,7 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
     const selectedRef = useRef(null);
     const containerRef = useRef(null);
     const lastEnterTime = useRef(0);
-    const { goLive, setPreviewContent } = useScripture();
+    const { goLive, setPreviewContent, addToSchedule } = useScripture();
 
     useEffect(() => {
         const fetchChapter = async () => {
@@ -285,22 +285,40 @@ const ChapterView = ({ book, chapter, highlightVerse, translation = 'KJV' }) => 
                                 </p>
                             </div>
 
-                            {/* Go Live Button */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGoLive(verse);
-                                }}
-                                className={`self-start p-2 rounded-full transition-all ${isSelected
-                                    ? 'bg-primary text-primary-foreground shadow-md'
-                                    : isHighlighted
+                            {/* Actions */}
+                            <div className="flex flex-col gap-1 items-center self-start opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGoLive(verse);
+                                    }}
+                                    className={`p-2 rounded-full transition-all ${isSelected || isHighlighted
                                         ? 'bg-primary text-primary-foreground shadow-md'
-                                        : 'bg-primary/10 text-primary opacity-0 group-hover:opacity-100'
-                                    }`}
-                                title="Go Live (or double-press Enter)"
-                            >
-                                <Play className="w-3 h-3" fill="currentColor" />
-                            </button>
+                                        : 'bg-primary/20 text-primary'
+                                        }`}
+                                    title="Go Live"
+                                >
+                                    <Play className="w-3 h-3" fill="currentColor" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        addToSchedule({
+                                            type: 'scripture',
+                                            reference: `${book} ${chapter}:${verse.verse}`,
+                                            text: verse.text,
+                                            book,
+                                            chapter,
+                                            verse: verse.verse,
+                                            translation
+                                        });
+                                    }}
+                                    className="p-2 bg-muted text-muted-foreground rounded-full hover:bg-accent"
+                                    title="Add to Schedule"
+                                >
+                                    <Plus className="w-3 h-3" />
+                                </button>
+                            </div>
                         </div>
                     );
                 })}
