@@ -1,0 +1,53 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+        env:
+          npm_config_runtime: electron
+          npm_config_target: 39.2.6
+          npm_config_disturl: https://electronjs.org/headers
+          npm_config_build_from_source: true
+
+      # OMITTED BY DEFAULT: GitHub Actions doesn't have your 2GB data files.
+      # To enable CI builds, upload your data/ and models/ to a cloud provider 
+      # and uncomment this section.
+      - name: Download Large Assets
+        run: |
+          mkdir -p data models
+          curl -L ${{ secrets.DATA_URL }} -o data/bible_data.zip
+          unzip data/bible_data.zip -d data/
+          curl -L ${{ secrets.MODELS_URL }} -o models/models.zip
+          unzip models/models.zip -d models/
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Build/Release Electron App
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release: true
+          # Note: macOS builds will not be signed unless certificates are provided in secrets
