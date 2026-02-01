@@ -31,6 +31,7 @@ jobs:
       - name: Install dependencies
         run: npm install
         env:
+          PYTHON: python3
           npm_config_runtime: electron
           npm_config_target: 39.2.6
           npm_config_disturl: https://electronjs.org/headers
