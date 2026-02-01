@@ -50,10 +50,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
-          vcpkg install openblas:x64-windows
+          vcpkg install openblas:x64-windows lapack:x64-windows
           # Add to both shell and future steps
           echo "CMAKE_PREFIX_PATH=$VCPKG_INSTALLATION_ROOT/installed/x64-windows" >> $GITHUB_ENV
           echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
+          # Explicitly point to the libraries for cmake-js
+          echo "BLAS_LIBRARIES=$VCPKG_INSTALLATION_ROOT/installed/x64-windows/lib/openblas.lib" >> $GITHUB_ENV
+          echo "LAPACK_LIBRARIES=$VCPKG_INSTALLATION_ROOT/installed/x64-windows/lib/openblas.lib" >> $GITHUB_ENV
 
       - name: Cleanup Lingering Processes (Windows)
         if: matrix.os == 'windows-latest'
@@ -115,3 +118,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: true
+          # Skip build as we already did it
+          skip_build: true
+        env:
+          PYTHON: python
+          npm_config_python: python
+          npm_config_runtime: electron
+          npm_config_target: 39.2.6
+          npm_config_disturl: https://electronjs.org/headers
+          npm_config_build_from_source: true
