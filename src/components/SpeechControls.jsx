@@ -13,7 +13,10 @@ const SpeechControls = () => {
     stopListening,
     clearTranscript,
     initializeSpeechRecognition,
-    sourceType
+    sourceType,
+    availableDevices,
+    selectedDeviceId,
+    setSelectedDeviceId
   } = useSpeech()
 
   useEffect(() => {
@@ -45,23 +48,41 @@ const SpeechControls = () => {
 
   return (
     <div className="flex items-center space-x-4">
-      <div className="flex bg-gray-100 rounded-lg p-1 mr-2">
-        <button
-          onClick={() => !isListening && startListening('mic')}
-          disabled={isListening}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!isListening && sourceType === 'mic' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-        >
-          Microphone
-        </button>
-        <button
-          onClick={() => !isListening && startListening('system')}
-          disabled={isListening}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!isListening && sourceType === 'system' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-        >
-          System Audio
-        </button>
+      <div className="flex flex-col gap-2">
+        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <button
+            onClick={() => !isListening && startListening('mic')}
+            disabled={isListening}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!isListening && sourceType === 'mic' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+          >
+            Microphone
+          </button>
+          <button
+            onClick={() => !isListening && startListening('system')}
+            disabled={isListening}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!isListening && sourceType === 'system' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+          >
+            System Audio
+          </button>
+        </div>
+
+        {sourceType === 'mic' && availableDevices.length > 0 && (
+          <select
+            value={selectedDeviceId}
+            onChange={(e) => setSelectedDeviceId(e.target.value)}
+            disabled={isListening}
+            className="text-[10px] bg-transparent text-muted-foreground border-none focus:ring-0 cursor-pointer hover:text-foreground transition-colors max-w-[150px] truncate outline-none"
+          >
+            <option value="default">Default Input</option>
+            {availableDevices.map(device => (
+              <option key={device.deviceId} value={device.deviceId}>
+                {device.label || `Microphone ${device.deviceId.slice(0, 5)}...`}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <button

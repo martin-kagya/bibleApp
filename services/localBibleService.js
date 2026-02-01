@@ -1,8 +1,9 @@
 const Database = require('better-sqlite3')
 const path = require('path')
 const fs = require('fs-extra')
+const { getResourcePath } = require('./pathUtils')
 
-const DB_PATH = path.join(__dirname, '../data/bible.sqlite')
+const DB_PATH = getResourcePath('data/bible.sqlite')
 
 // Ensure data directory exists
 fs.ensureDirSync(path.dirname(DB_PATH))

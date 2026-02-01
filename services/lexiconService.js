@@ -1,11 +1,12 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
+const { getResourcePath } = require('./pathUtils');
 
 class LexiconService {
     constructor() {
-        this.dbPath = path.join(__dirname, '../data/lexicon.sqlite');
-        this.bibleDbPath = path.join(__dirname, '../data/bible.sqlite');
+        this.dbPath = getResourcePath('data/lexicon.sqlite');
+        this.bibleDbPath = getResourcePath('data/bible.sqlite');
         this.db = null;
         this.bibleDb = null;
         this.bookMap = {};

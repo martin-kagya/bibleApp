@@ -22,6 +22,8 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
 
   const [isSupported, setIsSupported] = useState(false)
   const [error, setError] = useState(null)
+  const [availableDevices, setAvailableDevices] = useState([])
+  const [selectedDeviceId, setSelectedDeviceId] = useState('default')
 
   const audioStreamRef = useRef(null)
   const audioContextRef = useRef(null)
@@ -32,7 +34,25 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
 
   const { socket, isConnected } = useScripture()
 
-  // Check for AudioContext support
+  // Update available devices
+  const updateDevices = useCallback(async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return
+
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const audioInputs = devices.filter(device => device.kind === 'audioinput')
+      setAvailableDevices(audioInputs)
+
+      // If current selected device is no longer available, reset to default
+      if (selectedDeviceId !== 'default' && !audioInputs.find(d => d.deviceId === selectedDeviceId)) {
+        setSelectedDeviceId('default')
+      }
+    } catch (err) {
+      console.error('Error enumerating devices:', err)
+    }
+  }, [selectedDeviceId])
+
+  // Check for AudioContext support and initial devices
   useEffect(() => {
     const hasAudioContext = !!(window.AudioContext || window.webkitAudioContext)
     const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
@@ -40,12 +60,17 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
     if (hasAudioContext && hasGetUserMedia) {
       setIsSupported(true)
       console.log('✅ Whisper-based speech recognition available')
+      updateDevices()
+
+      // Listen for device changes (unplugging/plugging in)
+      navigator.mediaDevices.addEventListener('devicechange', updateDevices)
+      return () => navigator.mediaDevices.removeEventListener('devicechange', updateDevices)
     } else {
       setIsSupported(false)
       setError('Audio recording not supported in this browser')
       console.error('❌ AudioContext or getUserMedia not available')
     }
-  }, [])
+  }, [updateDevices])
 
   // Listen for transcript updates from backend
   useEffect(() => {
@@ -216,12 +241,16 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
         // Microphone Capture
         stream = await navigator.mediaDevices.getUserMedia({
           audio: {
+            deviceId: selectedDeviceId !== 'default' ? { exact: selectedDeviceId } : undefined,
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true
           }
         })
-        console.log('🎤 Microphone access granted')
+        console.log(`🎤 Microphone access granted (Device: ${selectedDeviceId})`)
+
+        // Refresh devices to get labels now that permission is granted
+        updateDevices()
       }
 
       audioStreamRef.current = stream
@@ -437,7 +466,11 @@ export const SpeechProvider = ({ children, onTranscriptChange }) => {
     stopListening,
     clearTranscript,
     initializeSpeechRecognition,
-    sourceType
+    sourceType,
+    availableDevices,
+    selectedDeviceId,
+    setSelectedDeviceId,
+    updateDevices
   }
 
   return (

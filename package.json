@@ -3,6 +3,67 @@
   "version": "2.0.0",
   "description": "Comprehensive AI-powered presentation software for preachers with real-time speech recognition and semantic scripture suggestions",
   "main": "electron.js",
+  "build": {
+    "appId": "com.pneumavoice.bibleapp",
+    "productName": "PneumaVoice",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron.js",
+      "electron-preload.js",
+      "server.js",
+      "services/**/*",
+      "routes/**/*",
+      "config/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "data",
+        "to": "data",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "models",
+        "to": "models",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "publisherName": "PneumaVoice"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true
+    },
+    "asar": true,
+    "asarUnpack": [
+      "services/faster_whisper_server.py",
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/faiss-node/**/*"
+    ]
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -21,7 +82,9 @@
     "electron:build": "electron-builder",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "rebuild:all": "electron-rebuild -f -w better-sqlite3,faiss-node,sqlite3",
-    "build:all": "npm run build && npm run electron:build"
+    "build:all": "npm run build && npm run electron:build",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:win": "npm run build && electron-builder --win"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
