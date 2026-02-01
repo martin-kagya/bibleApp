@@ -50,18 +50,18 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
-          choco install openblas
-          # Help CMake find OpenBLAS if it builds from source
-          echo "OPENBLAS_PATH=C:/tools/openblas" >> $GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=C:/tools/openblas" >> $GITHUB_ENV
+          vcpkg install openblas:x64-windows
+          # Add to both shell and future steps
+          echo "CMAKE_PREFIX_PATH=$VCPKG_INSTALLATION_ROOT/installed/x64-windows" >> $GITHUB_ENV
+          echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
 
       - name: Cleanup Lingering Processes (Windows)
         if: matrix.os == 'windows-latest'
         continue-on-error: true
         shell: pwsh
         run: |
-          Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force
-          Get-Process -Name "electron" -ErrorAction SilentlyContinue | Stop-Process -Force
+          Get-Process -Name "node", "electron" -ErrorAction SilentlyContinue | Stop-Process -Force
+          rm -rf node_modules/.bin/electron.cmd
 
       - name: Install dependencies
         shell: bash
@@ -115,5 +115,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: true
-          # Skip install as we already did it with the correct env
-          skip_install: true
