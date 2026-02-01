@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         shell: bash
-        run: npm ci || npm install
+        run: npm install --legacy-peer-deps
         env:
           PYTHON: python
           npm_config_python: python
@@ -51,17 +51,27 @@ jobs:
         run: |
           mkdir -p data models
           function gdrive_download() {
-            local url=$1
-            local output=$2
-            local id=$(echo $url | sed -E 's/.*id=([^&]*).*/\1/; s/.*\/d\/([^/]*).*/\1/')
+            local url="$1"
+            local output="$2"
+            local id=$(echo "$url" | sed -E 's/.*id=([^&]*).*/\1/; s/.*\/d\/([^/]*).*/\1/')
             echo "Downloading Google Drive ID: $id"
-            CONFIRM=$(curl -sL "https://drive.google.com/uc?export=download&id=${id}" | grep -o 'confirm=[^&]*' | sed 's/confirm=//')
-            curl -L "https://drive.google.com/uc?export=download&id=${id}&confirm=${CONFIRM}" -o $output
+            
+            # Use cookies to handle the "large file" confirmation page
+            curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}" > /dev/null
+            CONFIRM=$(curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}" | grep -o 'confirm=[^&]*' | head -1 | sed 's/confirm=//' || echo "")
+            
+            if [ -n "$CONFIRM" ]; then
+              curl -Lb /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}&confirm=${CONFIRM}" -o "$output"
+            else
+              curl -Lb /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}" -o "$output"
+            fi
+            rm -f /tmp/cookie.txt
           }
+          
           gdrive_download "${{ secrets.DATA_URL }}" "data/bible_data.zip"
-          unzip data/bible_data.zip -d data/
+          unzip -o data/bible_data.zip -d data/
           gdrive_download "${{ secrets.MODELS_URL }}" "models/models.zip"
-          unzip models/models.zip -d models/
+          unzip -o models/models.zip -d models/
 
       - name: Build Web App
         run: npm run build
