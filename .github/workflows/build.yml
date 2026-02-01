@@ -51,21 +51,33 @@ jobs:
         run: |
           mkdir -p data models
           function gdrive_download() {
-            local url="$1"
+            local id=$(echo "$1" | sed -E 's/.*id=([^&]*).*/\1/; s/.*\/d\/([^/]*).*/\1/')
             local output="$2"
-            local id=$(echo "$url" | sed -E 's/.*id=([^&]*).*/\1/; s/.*\/d\/([^/]*).*/\1/')
             echo "Downloading Google Drive ID: $id"
             
-            # Use cookies to handle the "large file" confirmation page
-            curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}" > /dev/null
-            CONFIRM=$(curl -sc /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}" | grep -o 'confirm=[^&]*' | head -1 | sed 's/confirm=//' || echo "")
+            # Step 1: Get the confirmation token
+            curl -Lb ./cookies.txt "https://docs.google.com/uc?export=download&id=${id}" -o confirm_page.html
+            local confirm=$(grep -oE 'confirm=[a-zA-Z0-9_]+' confirm_page.html | head -1 | cut -d'=' -f2)
             
-            if [ -n "$CONFIRM" ]; then
-              curl -Lb /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}&confirm=${CONFIRM}" -o "$output"
+            # Step 2: Download the actual file
+            if [ -n "$confirm" ]; then
+              echo "Confirmation code found: $confirm"
+              curl -Lb ./cookies.txt "https://docs.google.com/uc?export=download&id=${id}&confirm=${confirm}" -o "$output"
             else
-              curl -Lb /tmp/cookie.txt "https://drive.google.com/uc?export=download&id=${id}" -o "$output"
+              echo "No confirmation code needed or found. Trying direct download..."
+              curl -Lb ./cookies.txt "https://docs.google.com/uc?export=download&id=${id}" -o "$output"
             fi
-            rm -f /tmp/cookie.txt
+            
+            # Cleanup
+            rm -f confirm_page.html ./cookies.txt
+            
+            # Verify file size (should be > 1MB)
+            local size=$(wc -c < "$output" | tr -d ' ')
+            if [ "$size" -lt 1000000 ]; then
+              echo "ERROR: Downloaded file is too small ($size bytes). Content:"
+              head -n 5 "$output"
+              return 1
+            fi
           }
           
           gdrive_download "${{ secrets.DATA_URL }}" "data/bible_data.zip"
