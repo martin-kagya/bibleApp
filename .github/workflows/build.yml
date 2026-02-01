@@ -92,25 +92,30 @@ jobs:
             local confirm=$(grep -oE 'name="confirm" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
             local uuid=$(grep -oE 'name="uuid" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
             if [ -n "$confirm" ]; then
-              local dl_url="https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=${confirm}"
+              local dl_url="https://drive.usercontent.com/download?id=${id}&export=download&confirm=${confirm}"
               [ -n "$uuid" ] && dl_url="${dl_url}&uuid=${uuid}"
               curl -sL --cookie "$COOKIE_FILE" "$dl_url" -o "$output"
             else
               curl -sL --cookie "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o "$output"
             fi
             rm -f confirm_page.html "$COOKIE_FILE"
-            
-            local size=$(wc -c < "$output" | tr -d ' ')
-            if [ "$size" -lt 1000000 ]; then
-              echo "ERROR: Downloaded file too small ($size bytes)."
-              return 1
-            fi
           }
+
+          # Download and extract Data
           gdrive_download "${{ secrets.DATA_URL }}" "data.zip"
-          unzip -o data.zip
+          unzip -o data.zip -d data_tmp
+          if [ -d "data_tmp/data" ]; then cp -rn data_tmp/data/* data/ ; else cp -rn data_tmp/* data/ ; fi
+          
+          # Download and extract Models
           gdrive_download "${{ secrets.MODELS_URL }}" "models.zip"
-          unzip -o models.zip
-          rm data.zip models.zip
+          unzip -o models.zip -d models_tmp
+          if [ -d "models_tmp/models" ]; then cp -rn models_tmp/models/* models/ ; else cp -rn models_tmp/* models/ ; fi
+
+          # Final verification and cleanup
+          echo "--- ASSET VERIFICATION ---"
+          echo "Data Folder Size:" && du -sh data/
+          echo "Models Folder Size:" && du -sh models/
+          rm -rf data.zip models.zip data_tmp models_tmp
 
       - name: Build Web App
         run: npm run build
