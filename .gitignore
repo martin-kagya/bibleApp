@@ -8,6 +8,7 @@ temp/
 
 # Build & Dist
 dist/
+dist-electron/
 build/
 *.app
 

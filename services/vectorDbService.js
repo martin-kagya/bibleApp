@@ -1,11 +1,6 @@
 const fs = require('fs-extra')
 const path = require('path')
-let appPath = process.cwd()
-
-try {
-  const { app } = require('electron')
-  if (app) appPath = app.getAppPath()
-} catch (e) { }
+const { getResourcePath } = require('./pathUtils')
 
 let faiss = null
 try {
@@ -142,8 +137,8 @@ class VectorDbService {
       }
       const { pipeline, env } = await import('@xenova/transformers')
       this.env = env
-      this.env.localModelPath = path.join(appPath, 'models')
-      this.env.cacheDir = path.join(appPath, 'models')
+      this.env.localModelPath = getResourcePath('models')
+      this.env.cacheDir = getResourcePath('models')
       this.env.allowRemoteModels = true
       await this.loadAllVectorStores()
       this.isReady = true
@@ -162,7 +157,7 @@ class VectorDbService {
   async loadVectors(modelId) {
     try {
       const config = MODELS[modelId]
-      const vectorPath = path.join(appPath, 'data', config.filename)
+      const vectorPath = getResourcePath(path.join('data', config.filename))
       if (await fs.pathExists(vectorPath)) {
         const fileStream = fs.createReadStream(vectorPath)
         const rl = require('readline').createInterface({ input: fileStream, crlfDelay: Infinity })

@@ -1,6 +1,8 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const { EventEmitter } = require('events');
+const { getResourcePath } = require('./pathUtils');
+const { app } = require('electron');
 
 class FasterWhisperService extends EventEmitter {
     constructor() {
@@ -8,8 +10,19 @@ class FasterWhisperService extends EventEmitter {
         this.pythonProcess = null;
         this.isReady = false;
         this.buffer = '';
-        this.pythonPath = 'python3'; // Assume valid env or venv
-        this.scriptPath = path.join(__dirname, 'faster_whisper_server.py');
+
+        // Use python3 on Mac, python on Windows
+        this.pythonPath = process.platform === 'win32' ? 'python' : 'python3';
+
+        const isProd = app && app.isPackaged;
+        if (isProd) {
+            // Unpacked files in production are in app.asar.unpacked
+            this.scriptPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'services', 'faster_whisper_server.py');
+        } else {
+            this.scriptPath = path.join(__dirname, 'faster_whisper_server.py');
+        }
+
+        this.modelPath = getResourcePath('models/vosk-model-small-en-us-0.15'); // Note: You might need to adjust this depending on which model faster-whisper is using
         this.isInitializing = false;
     }
 
