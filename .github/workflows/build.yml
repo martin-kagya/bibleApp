@@ -55,20 +55,25 @@ jobs:
             local output="$2"
             echo "Downloading Google Drive ID: $id"
             
-            # Use cookie jar to handle session
             local COOKIE_FILE="./cookies.txt"
             
-            # Step 1: Get the confirmation token from the virus warning page
-            # We look for the "confirm" value in the HTML (e.g., <input type="hidden" name="confirm" value="t">)
+            # Step 1: Get the virus warning page and keep cookies
             curl -sL --cookie-jar "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o confirm_page.html
-            local confirm=$(grep -oE 'name="confirm" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
             
-            # Step 2: Download the actual file
+            # Step 2: Extract both 'confirm' and 'uuid' from the form
+            local confirm=$(grep -oE 'name="confirm" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
+            local uuid=$(grep -oE 'name="uuid" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
+            
+            echo "Confirmation: $confirm, UUID: $uuid"
+            
+            # Step 3: Perform actual download using the drive.usercontent.google.com endpoint
             if [ -n "$confirm" ]; then
-              echo "Confirmation code found: $confirm"
-              curl -sL --cookie "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}&confirm=${confirm}" -o "$output"
+              local dl_url="https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=${confirm}"
+              if [ -n "$uuid" ]; then
+                dl_url="${dl_url}&uuid=${uuid}"
+              fi
+              curl -sL --cookie "$COOKIE_FILE" "$dl_url" -o "$output"
             else
-              echo "No confirmation code found. Trying direct download..."
               curl -sL --cookie "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o "$output"
             fi
             
@@ -79,7 +84,7 @@ jobs:
             local size=$(wc -c < "$output" | tr -d ' ')
             if [ "$size" -lt 1000000 ]; then
               echo "ERROR: Downloaded file is too small ($size bytes). Content:"
-              head -n 10 "$output"
+              head -n 20 "$output"
               return 1
             fi
             echo "Successfully downloaded $(basename "$output") ($size bytes)"
