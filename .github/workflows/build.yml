@@ -10,12 +10,26 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
 
     steps:
       - name: Check out git repository
         uses: actions/checkout@v4
+
+      - name: Free Disk Space
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            sudo rm -rf /usr/share/dotnet
+            sudo rm -rf /opt/ghc
+            sudo rm -rf "/usr/local/share/boost"
+            sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            sudo rm -rf /Applications/Xcode_15.2.app
+            sudo rm -rf /Applications/Xcode_15.1.app
+          fi
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -32,6 +46,23 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install libomp
 
+      - name: Install Windows build dependencies
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          choco install openblas
+          # Help CMake find OpenBLAS if it builds from source
+          echo "OPENBLAS_PATH=C:/tools/openblas" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=C:/tools/openblas" >> $GITHUB_ENV
+
+      - name: Cleanup Lingering Processes (Windows)
+        if: matrix.os == 'windows-latest'
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force
+          Get-Process -Name "electron" -ErrorAction SilentlyContinue | Stop-Process -Force
+
       - name: Install dependencies
         shell: bash
         run: npm install --legacy-peer-deps
@@ -43,9 +74,6 @@ jobs:
           npm_config_disturl: https://electronjs.org/headers
           npm_config_build_from_source: true
 
-      # OMITTED BY DEFAULT: GitHub Actions doesn't have your 2GB data files.
-      # To enable CI builds, upload your data/ and models/ to a cloud provider 
-      # and uncomment this section.
       - name: Download Large Assets
         shell: bash
         run: |
@@ -54,46 +82,30 @@ jobs:
             local id=$(echo "$1" | sed -E 's/.*id=([^&]*).*/\1/; s/.*\/d\/([^/]*).*/\1/')
             local output="$2"
             echo "Downloading Google Drive ID: $id"
-            
             local COOKIE_FILE="./cookies.txt"
-            
-            # Step 1: Get the virus warning page and keep cookies
             curl -sL --cookie-jar "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o confirm_page.html
-            
-            # Step 2: Extract both 'confirm' and 'uuid' from the form
             local confirm=$(grep -oE 'name="confirm" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
             local uuid=$(grep -oE 'name="uuid" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
-            
-            echo "Confirmation: $confirm, UUID: $uuid"
-            
-            # Step 3: Perform actual download using the drive.usercontent.google.com endpoint
             if [ -n "$confirm" ]; then
               local dl_url="https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=${confirm}"
-              if [ -n "$uuid" ]; then
-                dl_url="${dl_url}&uuid=${uuid}"
-              fi
+              [ -n "$uuid" ] && dl_url="${dl_url}&uuid=${uuid}"
               curl -sL --cookie "$COOKIE_FILE" "$dl_url" -o "$output"
             else
               curl -sL --cookie "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o "$output"
             fi
-            
-            # Cleanup
             rm -f confirm_page.html "$COOKIE_FILE"
             
-            # Verify file size (should be > 1MB)
             local size=$(wc -c < "$output" | tr -d ' ')
             if [ "$size" -lt 1000000 ]; then
-              echo "ERROR: Downloaded file is too small ($size bytes). Content:"
-              head -n 20 "$output"
+              echo "ERROR: Downloaded file too small ($size bytes)."
               return 1
             fi
-            echo "Successfully downloaded $(basename "$output") ($size bytes)"
           }
-          
-          gdrive_download "${{ secrets.DATA_URL }}" "data/bible_data.zip"
-          unzip -o data/bible_data.zip -d data/
-          gdrive_download "${{ secrets.MODELS_URL }}" "models/models.zip"
-          unzip -o models/models.zip -d models/
+          gdrive_download "${{ secrets.DATA_URL }}" "data.zip"
+          unzip -o data.zip
+          gdrive_download "${{ secrets.MODELS_URL }}" "models.zip"
+          unzip -o models.zip
+          rm data.zip models.zip
 
       - name: Build Web App
         run: npm run build
@@ -103,4 +115,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: true
-          # Note: macOS builds will not be signed unless certificates are provided in secrets
+          # Skip install as we already did it with the correct env
+          skip_install: true
