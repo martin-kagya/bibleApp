@@ -28,6 +28,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install macOS build dependencies
+        if: matrix.os == 'macos-latest'
+        run: brew install libomp
+
       - name: Install dependencies
         run: npm install
         env:
