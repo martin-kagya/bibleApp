@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { History, BookOpen, Clock, Play, Trash2, X, Search, Book, Calendar } from 'lucide-react';
 import { useScripture } from '../../contexts/ScriptureContext';
 import SchedulePanel from './SchedulePanel';
+import { apiUrl } from '../../utils/api';
 
 /**
  * StudyCenter - Combined History and Lexicon/Study Panel
@@ -22,7 +23,8 @@ const StudyCenter = () => {
             // Automatically fetch interlinear for the synced scripture
             const fetchInterlinear = async () => {
                 try {
-                    const response = await fetch(`http://localhost:8000/api/lexicon/interlinear/${encodeURIComponent(lexiconScripture.reference)}`);
+                    const url = await apiUrl(`/api/lexicon/interlinear/${encodeURIComponent(lexiconScripture.reference)}`);
+                    const response = await fetch(url);
                     if (!response.ok) return;
                     const data = await response.json();
 
@@ -123,7 +125,8 @@ const StudyCenter = () => {
 
             if (isRef) {
                 // Fetch Interlinear
-                const response = await fetch(`http://localhost:8000/api/lexicon/interlinear/${encodeURIComponent(activeQuery)}`);
+                const url = await apiUrl(`/api/lexicon/interlinear/${encodeURIComponent(activeQuery)}`);
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('Verse not found');
                 const data = await response.json();
 
@@ -153,7 +156,8 @@ const StudyCenter = () => {
             } else {
                 // Dictionary Search
                 setActiveTab('dictionary');
-                const response = await fetch(`http://localhost:8000/api/lexicon/search?q=${encodeURIComponent(activeQuery)}`);
+                const url = await apiUrl(`/api/lexicon/search?q=${encodeURIComponent(activeQuery)}`);
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('Term not found');
                 const data = await response.json();
 
@@ -166,7 +170,7 @@ const StudyCenter = () => {
             }
         } catch (error) {
             console.error('Study search error:', error);
-            alert('Could not find that reference or term.');
+            alert('Could not find that reference or term. Please ensure the app is running correctly.');
         }
     };
 
@@ -197,7 +201,8 @@ const StudyCenter = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/lexicon/search?q=${word.strong}`);
+            const url = await apiUrl(`/api/lexicon/search?q=${word.strong}`);
+            const response = await fetch(url);
             let finalWord;
             if (response.ok) {
                 const data = await response.json();
