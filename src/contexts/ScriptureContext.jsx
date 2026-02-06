@@ -105,7 +105,8 @@ export const ScriptureProvider = ({ children }) => {
 
   // Initialize Socket.io connection
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+    // Explicitly use 127.0.0.1 for local server in production
+    const apiUrl = import.meta.env.VITE_API_URL || (window.electron ? 'http://127.0.0.1:8000' : 'http://localhost:8000')
     const newSocket = io(apiUrl)
 
     newSocket.on('connect', () => {

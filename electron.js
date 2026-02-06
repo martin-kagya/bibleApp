@@ -38,11 +38,11 @@ function createWindow() {
   }
 
   // Load the app
-  const startURL = IS_DEV
-    ? `http://127.0.0.1:${DEV_SERVER_PORT}` // Vite dev server
-    : `http://127.0.0.1:${SERVER_PORT}` // Production server
-
-  mainWindow.loadURL(startURL)
+  if (IS_DEV) {
+    mainWindow.loadURL(`http://127.0.0.1:${DEV_SERVER_PORT}`)
+  } else {
+    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'))
+  }
 
   // Grant media permissions for microphone
   mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
@@ -191,11 +191,11 @@ ipcMain.on('open-projector', () => {
     focusable: true // Needs to be focusable to receive full screen events, but we won't focus it manually
   })
 
-  const startURL = IS_DEV
-    ? `http://localhost:${DEV_SERVER_PORT}/live`
-    : `http://localhost:${SERVER_PORT}/live`
-
-  projectorWindow.loadURL(startURL)
+  if (IS_DEV) {
+    projectorWindow.loadURL(`http://127.0.0.1:${DEV_SERVER_PORT}/live`)
+  } else {
+    projectorWindow.loadFile(path.join(__dirname, 'dist', 'index.html'), { hash: 'live' })
+  }
 
   projectorWindow.once('ready-to-show', () => {
     // If we found a distinct external display, go fullscreen there
