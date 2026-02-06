@@ -1,7 +1,7 @@
 
 
 
-const { app, BrowserWindow, ipcMain, Menu } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron')
 const path = require('path')
 require('dotenv').config()
 
@@ -39,8 +39,8 @@ function createWindow() {
 
   // Load the app
   const startURL = IS_DEV
-    ? `http://localhost:${DEV_SERVER_PORT}` // Vite dev server
-    : `http://localhost:${SERVER_PORT}` // Production server
+    ? `http://127.0.0.1:${DEV_SERVER_PORT}` // Vite dev server
+    : `http://127.0.0.1:${SERVER_PORT}` // Production server
 
   mainWindow.loadURL(startURL)
 
@@ -57,9 +57,8 @@ function createWindow() {
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
-    if (IS_DEV) {
-      mainWindow.webContents.openDevTools()
-    }
+    // FORCE DEV TOOLS IN PRODUCTION FOR DEBUGGING
+    mainWindow.webContents.openDevTools()
   })
 
   // Handle window close
@@ -75,13 +74,33 @@ function createWindow() {
 }
 
 // Import server (runs in main process)
-const { server } = require('./server')
+let server;
+try {
+  const serverModule = require('./server')
+  server = serverModule.server
+} catch (err) {
+  const { app, dialog } = require('electron')
+  if (app.isReady()) {
+    dialog.showErrorBox('Startup Error', `Failed to load server module:\n${err.message}\n${err.stack}`)
+  } else {
+    app.on('ready', () => {
+      dialog.showErrorBox('Startup Error', `Failed to load server module:\n${err.message}\n${err.stack}`)
+    })
+  }
+}
 
 function startServer() {
-  // Start server in-process (runs in both dev and prod to share Electron runtime)
-  server.listen(SERVER_PORT, () => {
-    console.log(`Server running on port ${SERVER_PORT}`)
-  })
+  try {
+    // Start server in-process (runs in both dev and prod to share Electron runtime)
+    server.listen(SERVER_PORT, '127.0.0.1', () => {
+      console.log(`Server running on port ${SERVER_PORT}`)
+    })
+    server.on('error', (e) => {
+      dialog.showErrorBox('Server Error', `Failed to start local server on port ${SERVER_PORT}:\n${e.message}\n${e.stack}`)
+    })
+  } catch (err) {
+    dialog.showErrorBox('Critical Error', `Failed to initialize server:\n${err.message}\n${err.stack}`)
+  }
 }
 
 function stopServer() {
