@@ -31,7 +31,10 @@ contextBridge.exposeInMainWorld('electron', {
   loadSessionFile: () => ipcRenderer.invoke('load-session-file'),
 
   // Media Sources
-  getDesktopSources: () => ipcRenderer.invoke('get-desktop-sources')
+  getDesktopSources: () => ipcRenderer.invoke('get-desktop-sources'),
+
+  // Port Management
+  getServerPort: () => ipcRenderer.invoke('get-server-port')
 })
 
 

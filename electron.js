@@ -10,7 +10,7 @@ let mainWindow
 const DEV_SERVER_PORT = process.env.VITE_PORT || 3000
 
 // Server configuration
-const SERVER_PORT = process.env.PORT || 8000
+let SERVER_PORT = process.env.PORT || 8000
 const IS_DEV = process.env.NODE_ENV !== 'production'
 
 function createWindow() {
@@ -90,17 +90,27 @@ try {
 }
 
 function startServer() {
-  try {
-    // Start server in-process (runs in both dev and prod to share Electron runtime)
-    server.listen(SERVER_PORT, '127.0.0.1', () => {
-      console.log(`Server running on port ${SERVER_PORT}`)
-    })
-    server.on('error', (e) => {
-      dialog.showErrorBox('Server Error', `Failed to start local server on port ${SERVER_PORT}:\n${e.message}\n${e.stack}`)
-    })
-  } catch (err) {
-    dialog.showErrorBox('Critical Error', `Failed to initialize server:\n${err.message}\n${err.stack}`)
+  const tryListen = (port) => {
+    try {
+      server.listen(port, '127.0.0.1', () => {
+        console.log(`Server running on port ${port}`)
+        SERVER_PORT = port // Update global port
+      })
+
+      server.on('error', (e) => {
+        if (e.code === 'EADDRINUSE') {
+          console.log(`Port ${port} in use, trying ${port + 1}...`)
+          tryListen(port + 1)
+        } else {
+          dialog.showErrorBox('Server Error', `Failed to start local server on port ${port}:\n${e.message}\n${e.stack}`)
+        }
+      })
+    } catch (err) {
+      dialog.showErrorBox('Critical Error', `Failed to initialize server:\n${err.message}\n${err.stack}`)
+    }
   }
+
+  tryListen(SERVER_PORT)
 }
 
 function stopServer() {
@@ -225,6 +235,10 @@ ipcMain.handle('get-app-info', () => {
     name: app.getName(),
     isPackaged: app.isPackaged
   }
+})
+
+ipcMain.handle('get-server-port', () => {
+  return SERVER_PORT;
 })
 
 // Helper function to clean EasyWorship RTF/Text

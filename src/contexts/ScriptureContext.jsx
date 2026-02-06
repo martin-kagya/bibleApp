@@ -103,124 +103,133 @@ export const ScriptureProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false)
   const [isSmartAnalyzing, setIsSmartAnalyzing] = useState(false)
 
-  // Initialize Socket.io connection
   useEffect(() => {
-    // Explicitly use 127.0.0.1 for local server in production
-    const apiUrl = import.meta.env.VITE_API_URL || (window.electron ? 'http://127.0.0.1:8000' : 'http://localhost:8000')
-    const newSocket = io(apiUrl)
-
-    newSocket.on('connect', () => {
-      console.log('✓ Connected to server:', newSocket.id)
-      setIsConnected(true)
-    })
-
-    newSocket.on('disconnect', () => {
-      console.log('✗ Disconnected from server')
-      setIsConnected(false)
-    })
-
-    newSocket.on('session-started', (data) => {
-      console.log('✓ Session started:', data.sessionId)
-      setSessionId(data.sessionId)
-    })
-
-    newSocket.on('analysis-update', (data) => {
-      console.log('📊 Analysis update received')
-      setDetectedScriptures(data.detected || [])
-      setSuggestedScriptures(data.suggested || [])
-      setThemes(data.themes || null)
-    })
-
-    newSocket.on('scriptures-detected', (data) => {
-      console.log('📖 Scriptures detected')
-      setDetectedScriptures(data.detected || [])
-      setSuggestedScriptures(data.suggested || [])
-      setThemes(data.themes || null)
-    })
-
-    newSocket.on('live-update', (data) => {
-      console.log('🔴 Live Update received:', data);
-      if (data === null) {
-        setLiveScripture(null);
-      } else if (data) {
-        setLiveScripture(data);
+    const initSocket = async () => {
+      let port = 8000;
+      if (window.electron && window.electron.getServerPort) {
+        port = await window.electron.getServerPort();
+        console.log('📡 Fetched server port from Electron:', port);
       }
-    })
 
-    newSocket.on('analysis-result', (data) => {
-      const incomingDetections = (data.detected || []).map(d => ({
-        ...d,
-        isSmart: data.isSmart || d.isSmart,
-        reasoning: data.reasoning || d.reasoning
-      }))
+      const apiUrl = import.meta.env.VITE_API_URL || (window.electron ? `http://127.0.0.1:${port}` : 'http://localhost:8000');
+      console.log('🔗 Connecting socket to:', apiUrl);
+      const newSocket = io(apiUrl);
 
-      if (incomingDetections.length > 0) {
-        setDetectedScriptures(prev => {
-          const combined = new Map();
-          prev.forEach(item => combined.set(item.reference, item));
-          incomingDetections.forEach(item => {
-            const existing = combined.get(item.reference);
-            if (existing) {
-              combined.set(item.reference, {
-                ...existing,
-                ...item,
-                isSmart: existing.isSmart || item.isSmart,
-                reasoning: item.reasoning || existing.reasoning
-              });
-            } else {
-              combined.set(item.reference, item);
-            }
+      newSocket.on('connect', () => {
+        console.log('✓ Connected to server:', newSocket.id)
+        setIsConnected(true)
+      })
+
+      newSocket.on('disconnect', () => {
+        console.log('✗ Disconnected from server')
+        setIsConnected(false)
+      })
+
+      newSocket.on('session-started', (data) => {
+        console.log('✓ Session started:', data.sessionId)
+        setSessionId(data.sessionId)
+      })
+
+      newSocket.on('analysis-update', (data) => {
+        console.log('📊 Analysis update received')
+        setDetectedScriptures(data.detected || [])
+        setSuggestedScriptures(data.suggested || [])
+        setThemes(data.themes || null)
+      })
+
+      newSocket.on('scriptures-detected', (data) => {
+        console.log('📖 Scriptures detected')
+        setDetectedScriptures(data.detected || [])
+        setSuggestedScriptures(data.suggested || [])
+        setThemes(data.themes || null)
+      })
+
+      newSocket.on('live-update', (data) => {
+        console.log('🔴 Live Update received:', data);
+        if (data === null) {
+          setLiveScripture(null);
+        } else if (data) {
+          setLiveScripture(data);
+        }
+      })
+
+      newSocket.on('analysis-result', (data) => {
+        const incomingDetections = (data.detected || []).map(d => ({
+          ...d,
+          isSmart: data.isSmart || d.isSmart,
+          reasoning: data.reasoning || d.reasoning
+        }));
+
+        if (incomingDetections.length > 0) {
+          setDetectedScriptures(prev => {
+            const combined = new Map();
+            prev.forEach(item => combined.set(item.reference, item));
+            incomingDetections.forEach(item => {
+              const existing = combined.get(item.reference);
+              if (existing) {
+                combined.set(item.reference, {
+                  ...existing,
+                  ...item,
+                  isSmart: existing.isSmart || item.isSmart,
+                  reasoning: item.reasoning || existing.reasoning
+                });
+              } else {
+                combined.set(item.reference, item);
+              }
+            });
+            const result = Array.from(combined.values());
+            return result.slice(-10);
           });
-          const result = Array.from(combined.values());
-          return result.slice(-10);
-        });
-      }
+        }
 
-      if (data.isSmart) {
+        if (data.isSmart) {
+          setIsSmartAnalyzing(false)
+        }
+        if (data.suggested) setSuggestedScriptures(data.suggested)
+        if (data.themes) setThemes(data.themes)
+      })
+
+      newSocket.on('analysis-status', (data) => {
+        if (data.state === 'analyzing') {
+          setIsSmartAnalyzing(true)
+        } else {
+          setIsSmartAnalyzing(false)
+        }
+      })
+
+      newSocket.on('transcript-update', (data) => {
+        console.log('📝 Transcript:', data.transcript)
+        setLiveTranscript(data.fullContext || data.transcript)
+      })
+
+      newSocket.on('context-cleared', () => {
+        console.log('🧹 Context cleared')
+        setDetectedScriptures([])
+        setSuggestedScriptures([])
+        setThemes(null)
+        setLiveTranscript('')
         setIsSmartAnalyzing(false)
-      }
-      if (data.suggested) setSuggestedScriptures(data.suggested)
-      if (data.themes) setThemes(data.themes)
-    })
+      })
 
-    newSocket.on('analysis-status', (data) => {
-      if (data.state === 'analyzing') {
-        setIsSmartAnalyzing(true)
-      } else {
+      newSocket.on('session-ended', (data) => {
+        console.log('✓ Session ended:', data.sessionId)
+        setSessionId(null)
+      })
+
+      newSocket.on('error', (data) => {
+        console.error('❌ Socket error:', data.message)
         setIsSmartAnalyzing(false)
-      }
-    })
+      })
 
-    newSocket.on('transcript-update', (data) => {
-      console.log('📝 Transcript:', data.transcript)
-      setLiveTranscript(data.fullContext || data.transcript)
-    })
+      setSocket(newSocket)
+    }
 
-    newSocket.on('context-cleared', () => {
-      console.log('🧹 Context cleared')
-      setDetectedScriptures([])
-      setSuggestedScriptures([])
-      setThemes(null)
-      setLiveTranscript('')
-      setIsSmartAnalyzing(false)
-    })
-
-    newSocket.on('session-ended', (data) => {
-      console.log('✓ Session ended:', data.sessionId)
-      setSessionId(null)
-    })
-
-    newSocket.on('error', (data) => {
-      console.error('❌ Socket error:', data.message)
-      setIsSmartAnalyzing(false)
-    })
-
-    setSocket(newSocket)
+    initSocket();
 
     return () => {
-      newSocket.close()
+      // Cleanup will happen when the component unmounts
     }
-  }, [])
+  }, []);
 
   // Start a new sermon session
   const startSession = useCallback((title, preacher) => {
