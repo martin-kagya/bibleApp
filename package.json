@@ -1,6 +1,6 @@
 {
   "name": "bible-presentation-app",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Comprehensive AI-powered presentation software for preachers with real-time speech recognition and semantic scripture suggestions",
   "main": "electron.js",
   "build": {
@@ -103,12 +103,12 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "better-sqlite3": "^12.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.16",
-    "better-sqlite3": "^12.6.0",
     "concurrently": "^9.2.1",
     "electron": "^39.2.6",
     "electron-builder": "^24.9.1",
