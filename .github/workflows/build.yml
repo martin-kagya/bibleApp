@@ -86,12 +86,12 @@ jobs:
           mkdir -p data models
           
           # Download Data
-          gdown "${{ secrets.DATA_URL }}" -O data.zip
+          gdown "${{ secrets.DATA_URL }}" -O data.zip --fuzzy
           unzip -o data.zip -d data_tmp
           if [ -d "data_tmp/data" ]; then cp -rn data_tmp/data/* data/ ; else cp -rn data_tmp/* data/ ; fi
           
           # Download Models
-          gdown "${{ secrets.MODELS_URL }}" -O models.zip
+          gdown "${{ secrets.MODELS_URL }}" -O models.zip --fuzzy
           unzip -o models.zip -d models_tmp
           if [ -d "models_tmp/models" ]; then cp -rn models_tmp/models/* models/ ; else cp -rn models_tmp/* models/ ; fi
 
