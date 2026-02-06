@@ -1,6 +1,6 @@
 {
   "name": "bible-presentation-app",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Comprehensive AI-powered presentation software for preachers with real-time speech recognition and semantic scripture suggestions",
   "main": "electron.js",
   "build": {

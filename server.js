@@ -24,7 +24,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -395,6 +395,11 @@ app.get('/api/search/config', (req, res) => {
     console.error('Config error:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// React Router fallback (serve index.html for any unknown routes)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
