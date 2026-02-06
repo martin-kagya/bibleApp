@@ -66,7 +66,7 @@ jobs:
         shell: pwsh
         run: |
           Get-Process -Name "node", "electron" -ErrorAction SilentlyContinue | Stop-Process -Force
-          rm -rf node_modules/.bin/electron.cmd
+          if (Test-Path "node_modules/.bin/electron.cmd") { Remove-Item -Path "node_modules/.bin/electron.cmd" -Force -ErrorAction SilentlyContinue }
 
       - name: Install dependencies
         shell: bash
@@ -82,40 +82,25 @@ jobs:
       - name: Download Large Assets
         shell: bash
         run: |
+          pip install gdown
           mkdir -p data models
-          function gdrive_download() {
-            local id=$(echo "$1" | sed -E 's/.*id=([^&]*).*/\1/; s/.*\/d\/([^/]*).*/\1/')
-            local output="$2"
-            echo "Downloading Google Drive ID: $id"
-            local COOKIE_FILE="./cookies.txt"
-            curl -sL --cookie-jar "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o confirm_page.html
-            local confirm=$(grep -oE 'name="confirm" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
-            local uuid=$(grep -oE 'name="uuid" value="[^"]+"' confirm_page.html | head -1 | cut -d'"' -f4)
-            if [ -n "$confirm" ]; then
-              local dl_url="https://drive.usercontent.com/download?id=${id}&export=download&confirm=${confirm}"
-              [ -n "$uuid" ] && dl_url="${dl_url}&uuid=${uuid}"
-              curl -sL --cookie "$COOKIE_FILE" "$dl_url" -o "$output"
-            else
-              curl -sL --cookie "$COOKIE_FILE" "https://docs.google.com/uc?export=download&id=${id}" -o "$output"
-            fi
-            rm -f confirm_page.html "$COOKIE_FILE"
-          }
-
-          # Download and extract Data
-          gdrive_download "${{ secrets.DATA_URL }}" "data.zip"
+          
+          # Download Data
+          gdown "${{ secrets.DATA_URL }}" -O data.zip
           unzip -o data.zip -d data_tmp
           if [ -d "data_tmp/data" ]; then cp -rn data_tmp/data/* data/ ; else cp -rn data_tmp/* data/ ; fi
           
-          # Download and extract Models
-          gdrive_download "${{ secrets.MODELS_URL }}" "models.zip"
+          # Download Models
+          gdown "${{ secrets.MODELS_URL }}" -O models.zip
           unzip -o models.zip -d models_tmp
           if [ -d "models_tmp/models" ]; then cp -rn models_tmp/models/* models/ ; else cp -rn models_tmp/* models/ ; fi
 
-          # Final verification and cleanup
+          # Cleanup
+          rm -rf data.zip models.zip data_tmp models_tmp
+          
           echo "--- ASSET VERIFICATION ---"
           echo "Data Folder Size:" && du -sh data/
           echo "Models Folder Size:" && du -sh models/
-          rm -rf data.zip models.zip data_tmp models_tmp
 
       - name: Build Web App
         run: npm run build
