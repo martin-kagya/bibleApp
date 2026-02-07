@@ -19,7 +19,7 @@ const StudyCenter = () => {
 
     // Auto-sync with global lexicon state (from Search/Preview/Live)
     useEffect(() => {
-        if (lexiconScripture && lexiconScripture.reference) {
+        if (lexiconScripture && lexiconScripture.reference && lexiconScripture.type === 'scripture') {
             // Automatically fetch interlinear for the synced scripture
             const fetchInterlinear = async () => {
                 try {

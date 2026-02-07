@@ -9,9 +9,8 @@ let mainWindow
 
 const DEV_SERVER_PORT = process.env.VITE_PORT || 3000
 
-// Server configuration
-let SERVER_PORT = process.env.PORT || 8000
-const IS_DEV = process.env.NODE_ENV !== 'production'
+// Reliable environment detection
+const IS_DEV = !app.isPackaged
 
 function createWindow() {
   // Create the browser window
@@ -41,7 +40,19 @@ function createWindow() {
   if (IS_DEV) {
     mainWindow.loadURL(`http://127.0.0.1:${DEV_SERVER_PORT}`)
   } else {
-    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'))
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    if (!require('fs').existsSync(indexPath)) {
+      dialog.showErrorBox(
+        'Missing Assets',
+        'Could not find production assets (dist/index.html). Please run "npm run build" before starting the application.'
+      );
+    }
+    mainWindow.loadFile(indexPath).catch(err => {
+      dialog.showErrorBox(
+        'Load Error',
+        `Failed to load application interface:\n${err.message}`
+      );
+    });
   }
 
   // Grant media permissions for microphone
@@ -57,8 +68,10 @@ function createWindow() {
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
-    // FORCE DEV TOOLS IN PRODUCTION FOR DEBUGGING
-    mainWindow.webContents.openDevTools()
+    // Open DevTools in dev mode, or for production debugging if needed
+    if (IS_DEV) {
+      mainWindow.webContents.openDevTools()
+    }
   })
 
   // Handle window close
@@ -66,8 +79,13 @@ function createWindow() {
     mainWindow = null
   })
 
-  // Handle external links
+  // Handle external links (but allow internal /live navigation)
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Allow internal /live URLs to be handled by the app
+    if (url.includes('/live')) {
+      return { action: 'deny' } // Deny window.open but don't open externally
+    }
+    // Open external URLs in system browser
     require('electron').shell.openExternal(url)
     return { action: 'deny' }
   })
@@ -125,10 +143,10 @@ function stopServer() {
 app.whenReady().then(() => {
   startServer()
 
-  // Wait a bit for server to start
+  // Wait for server to stabilize
   setTimeout(() => {
     createWindow()
-  }, IS_DEV ? 500 : 2000)
+  }, IS_DEV ? 500 : 3000)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -164,14 +182,20 @@ let projectorWindow = null;
 
 // Handle Projector Window
 ipcMain.on('open-projector', () => {
+  console.log('🔍 IPC: open-projector received');
+  console.log('🔍 IPC: projectorWindow exists?', !!projectorWindow);
+  console.log('🔍 IPC: projectorWindow destroyed?', projectorWindow ? projectorWindow.isDestroyed() : 'N/A');
+
   // If window exists, just return (no need to steal focus)
   if (projectorWindow && !projectorWindow.isDestroyed()) {
+    console.log('✅ IPC: Projector window already exists, restoring if minimized');
     if (projectorWindow.isMinimized()) projectorWindow.restore();
     // Do NOT focus. The content updates via socket. 
     // If we focus, it disrupts the user's typing/control on the main dashboard.
     return;
   }
 
+  console.log('🔍 IPC: Creating new projector window');
   const { screen } = require('electron')
   const displays = screen.getAllDisplays()
   const primaryDisplay = screen.getPrimaryDisplay()
@@ -181,6 +205,8 @@ ipcMain.on('open-projector', () => {
   const externalDisplay = displays.find((display) => {
     return display.bounds.x !== 0 || display.bounds.y !== 0
   }) || primaryDisplay
+
+  console.log('🔍 IPC: Display info - Total displays:', displays.length, 'Using external?', externalDisplay !== primaryDisplay);
 
   projectorWindow = new BrowserWindow({
     x: externalDisplay.bounds.x + 50,
@@ -201,19 +227,27 @@ ipcMain.on('open-projector', () => {
     focusable: true // Needs to be focusable to receive full screen events, but we won't focus it manually
   })
 
+  const loadUrl = IS_DEV
+    ? `http://127.0.0.1:${DEV_SERVER_PORT}/#/live`
+    : path.join(__dirname, 'dist', 'index.html');
+
+  console.log('🔍 IPC: Loading projector window with:', loadUrl);
+
   if (IS_DEV) {
-    projectorWindow.loadURL(`http://127.0.0.1:${DEV_SERVER_PORT}/live`)
+    projectorWindow.loadURL(loadUrl)
   } else {
     projectorWindow.loadFile(path.join(__dirname, 'dist', 'index.html'), { hash: 'live' })
   }
 
   projectorWindow.once('ready-to-show', () => {
+    console.log('✅ IPC: Projector window ready to show');
     // If we found a distinct external display, go fullscreen there
     if (externalDisplay !== primaryDisplay) {
       projectorWindow.setFullScreen(true)
     }
     // usage of showInactive is key here to not steal focus from main window
     projectorWindow.showInactive();
+    console.log('✅ IPC: Projector window shown');
   })
 
   // Open external links in browser
@@ -224,6 +258,7 @@ ipcMain.on('open-projector', () => {
 
   // Reset variable when closed
   projectorWindow.on('closed', () => {
+    console.log('🔍 IPC: Projector window closed');
     projectorWindow = null;
   });
 })

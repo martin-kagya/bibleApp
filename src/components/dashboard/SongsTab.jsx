@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Music, Play, Eye, Plus, Edit2, Trash2, X, PlusCircle, Save } from 'lucide-react';
-import { getAllSongs, addSong, deleteSong, searchSongs, updateSong, bulkAddSongs } from '../../../services/songsService';
+import { getAllSongs, addSong, deleteSong, searchSongs, updateSong, bulkAddSongs, syncFromDatabase } from '../../../services/songsService';
 import { projectSong } from '../../../services/projectionWindowService';
 import { useScripture } from '../../contexts/ScriptureContext';
 import UnifiedPreviewMonitor from './UnifiedPreviewMonitor';
@@ -87,7 +87,20 @@ const SongsTab = () => {
 
     // Initial Load
     useEffect(() => {
-        loadSongs();
+        const initialLoad = async () => {
+            let currentSongs = getAllSongs();
+            if (currentSongs.length === 0) {
+                console.log('Library empty, auto-syncing from database...');
+                try {
+                    await syncFromDatabase();
+                    currentSongs = getAllSongs();
+                } catch (error) {
+                    console.error('Auto-sync failed:', error);
+                }
+            }
+            setSongs(currentSongs);
+        };
+        initialLoad();
     }, []);
 
     // Sync edited lyrics when selection changes
@@ -154,6 +167,19 @@ const SongsTab = () => {
         setSongs(getAllSongs());
     };
 
+    const handlePreviewStanza = (song, index) => {
+        if (!song) return;
+        const stanzas = getStanzas(song.lyrics);
+        const stanza = stanzas[index];
+        if (stanza && setPreviewContent) {
+            setPreviewContent({
+                type: 'song',
+                title: song.title,
+                content: stanza
+            });
+        }
+    };
+
     const handleSearch = (query) => {
         setSearchQuery(query);
         const allSongs = getAllSongs();
@@ -162,12 +188,14 @@ const SongsTab = () => {
             const results = searchSongs(query, allSongs);
             setSongs(results);
 
-            // "Instant Search" - Auto-select first match if available
+            // "Instant Search" - Auto-select first match and preview first stanza
             if (results.length > 0) {
-                // Find visible match in results
                 const bestMatch = results[0];
                 if (bestMatch.id !== selectedSong?.id) {
                     handleSelectSong(bestMatch);
+                    // Automatically preview the first stanza
+                    setPreviewIndex(0);
+                    handlePreviewStanza(bestMatch, 0);
                 }
             }
         } else {
@@ -175,12 +203,33 @@ const SongsTab = () => {
         }
     };
 
-    // --- Actions ---
     const handleSelectSong = (song) => {
         setSelectedSong(song);
         setPreviewIndex(-1);
         setLiveIndex(-1);
         setIsEditing(false);
+    };
+
+    const handleImportXML = async () => {
+        if (!window.electron || !window.electron.importXmlSongs) {
+            alert('XML import is only available in the Electron app');
+            return;
+        }
+
+        try {
+            const result = await window.electron.importXmlSongs();
+            if (result.success) {
+                // Add imported songs to localStorage
+                const addedCount = bulkAddSongs(result.songs);
+                loadSongs();
+                alert(`Successfully imported ${addedCount} songs!`);
+            } else {
+                alert(`Import failed: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            alert(`Import failed: ${error.message}`);
+        }
     };
 
     const handleGoLive = (stanzaText, index) => {
@@ -232,14 +281,7 @@ const SongsTab = () => {
 
         // 3. Otherwise, just Preview it
         setPreviewIndex(index);
-
-        if (setPreviewContent && selectedSong) {
-            setPreviewContent({
-                type: 'song',
-                title: selectedSong.title,
-                content: stanza
-            });
-        }
+        handlePreviewStanza(selectedSong, index);
     };
 
     const handleClearProjection = () => {
@@ -378,9 +420,16 @@ const SongsTab = () => {
                             className="w-full pl-8 pr-3 py-1.5 bg-background border border-input rounded-md focus:ring-1 focus:ring-primary text-xs shadow-sm"
                         />
                     </div>
-                    <button onClick={() => { setEditingSong(null); setIsModalOpen(true); }} className="flex items-center justify-center gap-1.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md text-xs font-medium transition-colors border border-primary/20 shadow-sm">
-                        <Plus className="w-3.5 h-3.5" /> Add New
-                    </button>
+                    <div className="flex gap-2">
+                        <button onClick={() => { setEditingSong(null); setIsModalOpen(true); }} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-md text-xs font-medium transition-colors border border-primary/20 shadow-sm">
+                            <Plus className="w-3.5 h-3.5" /> Add New
+                        </button>
+                        {window.electron && (
+                            <button onClick={handleImportXML} className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 rounded-md text-xs font-medium transition-colors border border-green-500/20 shadow-sm" title="Import XML Songs from data/Songs folder">
+                                <Music className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar">
                     {songs.map(song => (
@@ -388,7 +437,7 @@ const SongsTab = () => {
                             key={song.id}
                             onClick={() => handleSelectSong(song)}
                             className={`px-3 py-2 rounded-md cursor-pointer transition-all border text-sm ${selectedSong?.id === song.id
-                                ? 'bg-primary/10 border-primary/30 font-medium shadow-sm'
+                                ? 'bg-primary border-primary text-primary-foreground font-semibold shadow-md translate-x-1'
                                 : 'bg-transparent hover:bg-muted border-transparent hover:border-border/50'
                                 }`}
                         >

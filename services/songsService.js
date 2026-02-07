@@ -196,6 +196,24 @@ export const bulkAddSongs = (newSongs) => {
     return songsToAdd.length;
 };
 
+/**
+ * Sync songs from the local SQLite database via API
+ * @returns {Promise<number>} Number of new songs added
+ */
+export const syncFromDatabase = async () => {
+    try {
+        // Use relative URL as it will be proxied or handled by the local server
+        const response = await fetch('/api/songs');
+        if (!response.ok) throw new Error('Failed to fetch songs from database');
+
+        const songs = await response.json();
+        return bulkAddSongs(songs);
+    } catch (error) {
+        console.error('Sync error:', error);
+        throw error;
+    }
+};
+
 export default {
     getAllSongs,
     addSong,

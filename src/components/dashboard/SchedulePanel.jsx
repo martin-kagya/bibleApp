@@ -149,9 +149,9 @@ const SchedulePanel = ({ openInLexicon }) => {
                                     >
                                         <Play className="w-3 h-3" fill="currentColor" />
                                     </button>
-                                    {(item.type === 'scripture' || item.type === 'song') && (
+                                    {item.type === 'scripture' && (
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); openInLexicon(item.reference || item.songTitle || item.title); }}
+                                            onClick={(e) => { e.stopPropagation(); openInLexicon(item.reference || item.title); }}
                                             className="p-2 bg-muted text-muted-foreground rounded-full hover:bg-accent hover:text-accent-foreground"
                                             title="Open in Lexicon"
                                         >

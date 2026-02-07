@@ -9,6 +9,7 @@ require('dotenv').config();
 // Initialize local database via service
 const { localBibleService } = require('./services/localBibleService');
 const { bibleCacheService } = require('./services/bibleCacheService');
+const { localSongsService } = require('./services/localSongsService');
 
 const app = express();
 const server = http.createServer(app);
@@ -393,6 +394,27 @@ app.get('/api/search/config', (req, res) => {
     res.json(config);
   } catch (error) {
     console.error('Config error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Songs Endpoints
+app.get('/api/songs', (req, res) => {
+  try {
+    const songs = localSongsService.getAllSongs();
+    res.json(songs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/songs/search', (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'Query required' });
+    const results = localSongsService.searchSongs(q);
+    res.json(results);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

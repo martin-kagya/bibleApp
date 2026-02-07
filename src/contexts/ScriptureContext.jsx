@@ -3,13 +3,19 @@ import io from 'socket.io-client'
 
 // Helper to open live display window on extended display
 const openLiveDisplayWindow = () => {
+  console.log('🔍 openLiveDisplayWindow called');
+  console.log('🔍 window.electron exists?', !!window.electron);
+  console.log('🔍 window.electron.openProjector exists?', !!(window.electron && window.electron.openProjector));
+
   try {
     if (window.electron && window.electron.openProjector) {
-      console.log('Using Electron projector window (supports extended displays)');
+      console.log('✅ Using Electron projector window (supports extended displays)');
       window.electron.openProjector();
+      console.log('✅ window.electron.openProjector() called successfully');
       return;
     }
 
+    console.log('⚠️ Falling back to browser window.open()');
     let windowFeatures = 'width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no,scrollbars=no';
 
     try {
@@ -21,6 +27,7 @@ const openLiveDisplayWindow = () => {
     }
 
     const liveUrl = window.location.origin + '/live';
+    console.log('🔍 Opening window with URL:', liveUrl);
     const liveWindow = window.open(liveUrl, 'pneumavoice_live_display', windowFeatures);
 
     if (liveWindow) {
@@ -396,8 +403,10 @@ export const ScriptureProvider = ({ children }) => {
     if (socket && scripture) {
       let finalScripture = { ...scripture };
 
-      // Sync with Lexicon
-      setLexiconScripture(finalScripture);
+      // Sync with Lexicon (only for scriptures)
+      if (finalScripture.type === 'scripture' || (finalScripture.reference && !finalScripture.type)) {
+        setLexiconScripture(finalScripture);
+      }
 
       // Ensure type is distinct
       if (finalScripture.reference && !finalScripture.type) {

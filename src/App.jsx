@@ -20,7 +20,7 @@ const MainLayout = () => (
   </div>
 );
 
-const AppContent = () => {
+const MainAppContent = () => {
   const { sendTranscript, sessionId } = useScripture()
 
   const handleTranscriptChange = (transcript) => {
@@ -31,32 +31,39 @@ const AppContent = () => {
 
   return (
     <SpeechProvider onTranscriptChange={handleTranscriptChange}>
-      <Router>
-
+      <div className="min-h-screen bg-background">
         <Routes>
-          <Route path="/live" element={<LiveDisplay />} />
-          {/* Main Route - Wraps Dashboard via PresentationDisplay */}
-          <Route path="/*" element={
-            <div className="min-h-screen bg-background">
-              {/* No Header - Dashboard has its own */}
-              <Routes>
-                <Route path="/" element={<PresentationDisplay />} />
-              </Routes>
-            </div>
-          } />
+          <Route path="/" element={<PresentationDisplay />} />
         </Routes>
-      </Router>
+      </div>
     </SpeechProvider>
   )
 }
 
 function App() {
   return (
-    <ProjectionSettingsProvider>
-      <ScriptureProvider>
-        <AppContent />
-      </ScriptureProvider>
-    </ProjectionSettingsProvider>
+    <Router>
+      <Routes>
+        {/* Live Display Route - WITH CONTEXT PROVIDERS (for receiving live updates) */}
+        {/* but NOT the SpeechProvider (which would trigger window opening) */}
+        <Route path="/live" element={
+          <ProjectionSettingsProvider>
+            <ScriptureProvider>
+              <LiveDisplay />
+            </ScriptureProvider>
+          </ProjectionSettingsProvider>
+        } />
+
+        {/* Main App Routes - WITH ALL CONTEXT PROVIDERS */}
+        <Route path="/*" element={
+          <ProjectionSettingsProvider>
+            <ScriptureProvider>
+              <MainAppContent />
+            </ScriptureProvider>
+          </ProjectionSettingsProvider>
+        } />
+      </Routes>
+    </Router>
   )
 }
 
